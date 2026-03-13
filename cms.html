@@ -1,0 +1,2365 @@
+<!DOCTYPE html>
+<!-- saved from url=(0137)file:///C:/Users/kis/Desktop/CMS%20%ED%8C%8C%EC%9D%BC%20%EC%86%A1%EC%88%98%EC%8B%A0%20%EC%97%85%EB%AC%B4%20%EB%8B%AC%EB%A0%A5_251229.html -->
+<html lang="ko"><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+    
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CMS 파일 송수신 업무 달력 (공유)</title>
+    <!-- Tailwind CSS CDN -->
+    <script src="./CMS 파일 송수신 업무 달력_251229_최종_files/saved_resource"></script>
+    <style>
+        /* Inter 폰트 설정 */
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@100..900&display=swap');
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #f4f7f9;
+        }
+        /* 프린트 스타일 */
+        @media print {
+            /* 인쇄 시 불필요한 요소 숨김 */
+            #app > .mb-4, 
+            #app > .tab-content > .flex.justify-between, 
+            #app > .tab-content > .mt-12,
+            #printBtn,11t;
+            #monthYearSelectors {
+                display: none !important;
+            }
+            /* 달력 전체 레이아웃 설정 */dpqk 
+            .calendar-container, #calendarDays {
+                box-shadow: none !important;
+                border: 1px solid #ccc !important;
+            } 
+            .day-cell {
+                min-height: 80px !important; /* 인쇄 시 높이 조정 */
+                border: 1px solid #e5e7eb !important;
+            }
+            .task-block {
+                font-size: 8px !important; /* 인쇄 시 폰트 크기 조정 */
+                padding: 1px 2px !important;
+                margin-top: 1px !important;
+                height: auto !important; /* 인쇄 시 높이 자동 조절 */
+                line-height: 1.1 !important;
+            }
+            .day-number {
+                font-size: 0.9rem !important;
+            }
+            /* 달력 제목 표시 (인쇄용) */
+            .print-header {
+                display: block !important;
+                text-align: center;
+                font-size: 1.5rem;
+                font-weight: bold;
+                margin-bottom: 20px;
+                padding-top: 10px;
+            }
+        }
+        /* 기존 스타일 유지 */
+        .calendar-grid {
+            display: grid;
+            grid-template-columns: repeat(7, 1fr);
+            gap: 1px;
+            background-color: #e5e7eb; /* 그리드 경계선 색상 */
+            border-radius: 0.5rem;
+            overflow: hidden;
+        }
+        .day-header {
+            padding: 1rem 0;
+            font-weight: 600;
+            text-align: center;
+            background-color: #f9fafb;
+        }
+        .day-cell {
+            min-height: 120px; 
+            background-color: white;
+            padding: 4px; 
+            text-align: left;
+            position: relative;
+            cursor: default;
+            transition: background-color 0.1s;
+        }
+        .day-cell:hover {
+            background-color: #f0f4f7;
+            z-index: 10;
+        }
+        .day-number {
+            font-size: 1.1rem;
+            font-weight: 600;
+            margin-bottom: 4px;
+            display: block;
+            text-align: right;
+            padding-right: 4px;
+        }
+        .other-month {
+            background-color: #f9fafb;
+            color: #9ca3af;
+        }
+        .today {
+            background-color: #e0f2fe; /* light-blue-100 */
+        }
+        /* 업무 블록 스타일 */
+        .task-block {
+            font-size: 0.75rem; /* text-xs */
+            padding: 2px 4px;
+            margin-top: 2px;
+            border-radius: 4px;
+            font-weight: 500;
+            white-space: normal; /* 줄 바꿈 허용 */
+            line-height: 1.2;
+            color: white; /* 텍스트는 흰색으로 통일 */
+            box-shadow: 0 1px 2px rgba(0,0,0,0.1);
+        }
+        .task-block .task-code {
+            font-weight: 700; /* 파일 코드 강조 */
+        }
+        .task-block .task-detail {
+            font-size: 0.65rem; /* 업무 상세는 좀 더 작게 */
+        }
+        /* 공휴일 텍스트 스타일 */
+        .holiday-text {
+            font-size: 0.75rem;
+            color: #ef4444;
+            text-align: center;
+            padding: 4px 2px;
+            margin-top: 4px;
+            line-height: 1.3;
+            font-weight: 600;
+        }
+        /* 색상 그룹 정의 */
+        .color-group-send {
+            background-color: #2563eb; /* blue-600 */
+        }
+        .color-group-receive {
+            background-color: #f97316; /* orange-500 */
+        }
+        /* 활성 탭 스타일 */
+        .tab-active {
+            border-color: #4f46e5;
+            color: #4f46e5;
+            background-color: white;
+        }
+        .print-header {
+            display: none;
+        }
+    </style>
+<style>*, ::before, ::after{--tw-border-spacing-x:0;--tw-border-spacing-y:0;--tw-translate-x:0;--tw-translate-y:0;--tw-rotate:0;--tw-skew-x:0;--tw-skew-y:0;--tw-scale-x:1;--tw-scale-y:1;--tw-pan-x: ;--tw-pan-y: ;--tw-pinch-zoom: ;--tw-scroll-snap-strictness:proximity;--tw-gradient-from-position: ;--tw-gradient-via-position: ;--tw-gradient-to-position: ;--tw-ordinal: ;--tw-slashed-zero: ;--tw-numeric-figure: ;--tw-numeric-spacing: ;--tw-numeric-fraction: ;--tw-ring-inset: ;--tw-ring-offset-width:0px;--tw-ring-offset-color:#fff;--tw-ring-color:rgb(59 130 246 / 0.5);--tw-ring-offset-shadow:0 0 #0000;--tw-ring-shadow:0 0 #0000;--tw-shadow:0 0 #0000;--tw-shadow-colored:0 0 #0000;--tw-blur: ;--tw-brightness: ;--tw-contrast: ;--tw-grayscale: ;--tw-hue-rotate: ;--tw-invert: ;--tw-saturate: ;--tw-sepia: ;--tw-drop-shadow: ;--tw-backdrop-blur: ;--tw-backdrop-brightness: ;--tw-backdrop-contrast: ;--tw-backdrop-grayscale: ;--tw-backdrop-hue-rotate: ;--tw-backdrop-invert: ;--tw-backdrop-opacity: ;--tw-backdrop-saturate: ;--tw-backdrop-sepia: ;--tw-contain-size: ;--tw-contain-layout: ;--tw-contain-paint: ;--tw-contain-style: }::backdrop{--tw-border-spacing-x:0;--tw-border-spacing-y:0;--tw-translate-x:0;--tw-translate-y:0;--tw-rotate:0;--tw-skew-x:0;--tw-skew-y:0;--tw-scale-x:1;--tw-scale-y:1;--tw-pan-x: ;--tw-pan-y: ;--tw-pinch-zoom: ;--tw-scroll-snap-strictness:proximity;--tw-gradient-from-position: ;--tw-gradient-via-position: ;--tw-gradient-to-position: ;--tw-ordinal: ;--tw-slashed-zero: ;--tw-numeric-figure: ;--tw-numeric-spacing: ;--tw-numeric-fraction: ;--tw-ring-inset: ;--tw-ring-offset-width:0px;--tw-ring-offset-color:#fff;--tw-ring-color:rgb(59 130 246 / 0.5);--tw-ring-offset-shadow:0 0 #0000;--tw-ring-shadow:0 0 #0000;--tw-shadow:0 0 #0000;--tw-shadow-colored:0 0 #0000;--tw-blur: ;--tw-brightness: ;--tw-contrast: ;--tw-grayscale: ;--tw-hue-rotate: ;--tw-invert: ;--tw-saturate: ;--tw-sepia: ;--tw-drop-shadow: ;--tw-backdrop-blur: ;--tw-backdrop-brightness: ;--tw-backdrop-contrast: ;--tw-backdrop-grayscale: ;--tw-backdrop-hue-rotate: ;--tw-backdrop-invert: ;--tw-backdrop-opacity: ;--tw-backdrop-saturate: ;--tw-backdrop-sepia: ;--tw-contain-size: ;--tw-contain-layout: ;--tw-contain-paint: ;--tw-contain-style: }/* ! tailwindcss v3.4.17 | MIT License | https://tailwindcss.com */*,::after,::before{box-sizing:border-box;border-width:0;border-style:solid;border-color:#e5e7eb}::after,::before{--tw-content:''}:host,html{line-height:1.5;-webkit-text-size-adjust:100%;-moz-tab-size:4;tab-size:4;font-family:ui-sans-serif, system-ui, sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol", "Noto Color Emoji";font-feature-settings:normal;font-variation-settings:normal;-webkit-tap-highlight-color:transparent}body{margin:0;line-height:inherit}hr{height:0;color:inherit;border-top-width:1px}abbr:where([title]){-webkit-text-decoration:underline dotted;text-decoration:underline dotted}h1,h2,h3,h4,h5,h6{font-size:inherit;font-weight:inherit}a{color:inherit;text-decoration:inherit}b,strong{font-weight:bolder}code,kbd,pre,samp{font-family:ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;font-feature-settings:normal;font-variation-settings:normal;font-size:1em}small{font-size:80%}sub,sup{font-size:75%;line-height:0;position:relative;vertical-align:baseline}sub{bottom:-.25em}sup{top:-.5em}table{text-indent:0;border-color:inherit;border-collapse:collapse}button,input,optgroup,select,textarea{font-family:inherit;font-feature-settings:inherit;font-variation-settings:inherit;font-size:100%;font-weight:inherit;line-height:inherit;letter-spacing:inherit;color:inherit;margin:0;padding:0}button,select{text-transform:none}button,input:where([type=button]),input:where([type=reset]),input:where([type=submit]){-webkit-appearance:button;background-color:transparent;background-image:none}:-moz-focusring{outline:auto}:-moz-ui-invalid{box-shadow:none}progress{vertical-align:baseline}::-webkit-inner-spin-button,::-webkit-outer-spin-button{height:auto}[type=search]{-webkit-appearance:textfield;outline-offset:-2px}::-webkit-search-decoration{-webkit-appearance:none}::-webkit-file-upload-button{-webkit-appearance:button;font:inherit}summary{display:list-item}blockquote,dd,dl,figure,h1,h2,h3,h4,h5,h6,hr,p,pre{margin:0}fieldset{margin:0;padding:0}legend{padding:0}menu,ol,ul{list-style:none;margin:0;padding:0}dialog{padding:0}textarea{resize:vertical}input::placeholder,textarea::placeholder{opacity:1;color:#9ca3af}[role=button],button{cursor:pointer}:disabled{cursor:default}audio,canvas,embed,iframe,img,object,svg,video{display:block;vertical-align:middle}img,video{max-width:100%;height:auto}[hidden]:where(:not([hidden=until-found])){display:none}.order-1{order:1}.order-2{order:2}.order-3{order:3}.mx-auto{margin-left:auto;margin-right:auto}.-mb-px{margin-bottom:-1px}.mb-1{margin-bottom:0.25rem}.mb-3{margin-bottom:0.75rem}.mb-4{margin-bottom:1rem}.mb-6{margin-bottom:1.5rem}.mb-8{margin-bottom:2rem}.ml-1{margin-left:0.25rem}.mr-1{margin-right:0.25rem}.mr-2{margin-right:0.5rem}.mt-12{margin-top:3rem}.mt-6{margin-top:1.5rem}.mb-2{margin-bottom:0.5rem}.ml-3{margin-left:0.75rem}.ml-4{margin-left:1rem}.ml-auto{margin-left:auto}.mr-3{margin-right:0.75rem}.mt-4{margin-top:1rem}.mt-8{margin-top:2rem}.inline-block{display:inline-block}.flex{display:flex}.hidden{display:none}.h-4{height:1rem}.h-5{height:1.25rem}.h-6{height:1.5rem}.w-4{width:1rem}.w-5{width:1.25rem}.w-6{width:1.5rem}.w-full{width:100%}.min-w-full{min-width:100%}.max-w-7xl{max-width:80rem}.flex-col{flex-direction:column}.flex-wrap{flex-wrap:wrap}.items-end{align-items:flex-end}.items-center{align-items:center}.justify-end{justify-content:flex-end}.justify-center{justify-content:center}.justify-between{justify-content:space-between}.gap-2{gap:0.5rem}.gap-4{gap:1rem}.space-x-2 > :not([hidden]) ~ :not([hidden]){--tw-space-x-reverse:0;margin-right:calc(0.5rem * var(--tw-space-x-reverse));margin-left:calc(0.5rem * calc(1 - var(--tw-space-x-reverse)))}.space-x-8 > :not([hidden]) ~ :not([hidden]){--tw-space-x-reverse:0;margin-right:calc(2rem * var(--tw-space-x-reverse));margin-left:calc(2rem * calc(1 - var(--tw-space-x-reverse)))}.space-y-2 > :not([hidden]) ~ :not([hidden]){--tw-space-y-reverse:0;margin-top:calc(0.5rem * calc(1 - var(--tw-space-y-reverse)));margin-bottom:calc(0.5rem * var(--tw-space-y-reverse))}.space-y-4 > :not([hidden]) ~ :not([hidden]){--tw-space-y-reverse:0;margin-top:calc(1rem * calc(1 - var(--tw-space-y-reverse)));margin-bottom:calc(1rem * var(--tw-space-y-reverse))}.divide-y > :not([hidden]) ~ :not([hidden]){--tw-divide-y-reverse:0;border-top-width:calc(1px * calc(1 - var(--tw-divide-y-reverse)));border-bottom-width:calc(1px * var(--tw-divide-y-reverse))}.divide-gray-200 > :not([hidden]) ~ :not([hidden]){--tw-divide-opacity:1;border-color:rgb(229 231 235 / var(--tw-divide-opacity, 1))}.overflow-x-auto{overflow-x:auto}.whitespace-nowrap{white-space:nowrap}.rounded{border-radius:0.25rem}.rounded-full{border-radius:9999px}.rounded-lg{border-radius:0.5rem}.rounded-md{border-radius:0.375rem}.rounded-xl{border-radius:0.75rem}.border{border-width:1px}.border-b{border-bottom-width:1px}.border-b-2{border-bottom-width:2px}.border-l-4{border-left-width:4px}.border-t-4{border-top-width:4px}.border-t{border-top-width:1px}.border-dashed{border-style:dashed}.border-gray-100{--tw-border-opacity:1;border-color:rgb(243 244 246 / var(--tw-border-opacity, 1))}.border-gray-200{--tw-border-opacity:1;border-color:rgb(229 231 235 / var(--tw-border-opacity, 1))}.border-gray-300{--tw-border-opacity:1;border-color:rgb(209 213 219 / var(--tw-border-opacity, 1))}.border-indigo-500{--tw-border-opacity:1;border-color:rgb(99 102 241 / var(--tw-border-opacity, 1))}.border-transparent{border-color:transparent}.border-yellow-400{--tw-border-opacity:1;border-color:rgb(250 204 21 / var(--tw-border-opacity, 1))}.bg-gray-50{--tw-bg-opacity:1;background-color:rgb(249 250 251 / var(--tw-bg-opacity, 1))}.bg-green-500{--tw-bg-opacity:1;background-color:rgb(34 197 94 / var(--tw-bg-opacity, 1))}.bg-green-600{--tw-bg-opacity:1;background-color:rgb(22 163 74 / var(--tw-bg-opacity, 1))}.bg-indigo-50{--tw-bg-opacity:1;background-color:rgb(238 242 255 / var(--tw-bg-opacity, 1))}.bg-indigo-500{--tw-bg-opacity:1;background-color:rgb(99 102 241 / var(--tw-bg-opacity, 1))}.bg-purple-500{--tw-bg-opacity:1;background-color:rgb(168 85 247 / var(--tw-bg-opacity, 1))}.bg-white{--tw-bg-opacity:1;background-color:rgb(255 255 255 / var(--tw-bg-opacity, 1))}.bg-yellow-50{--tw-bg-opacity:1;background-color:rgb(254 252 232 / var(--tw-bg-opacity, 1))}.bg-gray-100{--tw-bg-opacity:1;background-color:rgb(243 244 246 / var(--tw-bg-opacity, 1))}.\!bg-red-50{--tw-bg-opacity:1 !important;background-color:rgb(254 242 242 / var(--tw-bg-opacity, 1)) !important}.bg-green-100{--tw-bg-opacity:1;background-color:rgb(220 252 231 / var(--tw-bg-opacity, 1))}.\!bg-opacity-80{--tw-bg-opacity:0.8 !important}.p-0{padding:0px}.p-3{padding:0.75rem}.p-4{padding:1rem}.p-6{padding:1.5rem}.px-1{padding-left:0.25rem;padding-right:0.25rem}.px-3{padding-left:0.75rem;padding-right:0.75rem}.px-4{padding-left:1rem;padding-right:1rem}.px-6{padding-left:1.5rem;padding-right:1.5rem}.py-2{padding-top:0.5rem;padding-bottom:0.5rem}.py-3{padding-top:0.75rem;padding-bottom:0.75rem}.px-2{padding-left:0.5rem;padding-right:0.5rem}.py-1{padding-top:0.25rem;padding-bottom:0.25rem}.pb-2{padding-bottom:0.5rem}.pt-4{padding-top:1rem}.text-left{text-align:left}.text-center{text-align:center}.text-3xl{font-size:1.875rem;line-height:2.25rem}.text-lg{font-size:1.125rem;line-height:1.75rem}.text-sm{font-size:0.875rem;line-height:1.25rem}.text-xl{font-size:1.25rem;line-height:1.75rem}.text-xs{font-size:0.75rem;line-height:1rem}.text-base{font-size:1rem;line-height:1.5rem}.font-bold{font-weight:700}.font-extrabold{font-weight:800}.font-medium{font-weight:500}.font-semibold{font-weight:600}.uppercase{text-transform:uppercase}.tracking-wider{letter-spacing:0.05em}.text-blue-600{--tw-text-opacity:1;color:rgb(37 99 235 / var(--tw-text-opacity, 1))}.text-gray-500{--tw-text-opacity:1;color:rgb(107 114 128 / var(--tw-text-opacity, 1))}.text-gray-600{--tw-text-opacity:1;color:rgb(75 85 99 / var(--tw-text-opacity, 1))}.text-gray-700{--tw-text-opacity:1;color:rgb(55 65 81 / var(--tw-text-opacity, 1))}.text-gray-800{--tw-text-opacity:1;color:rgb(31 41 55 / var(--tw-text-opacity, 1))}.text-indigo-500{--tw-text-opacity:1;color:rgb(99 102 241 / var(--tw-text-opacity, 1))}.text-indigo-600{--tw-text-opacity:1;color:rgb(79 70 229 / var(--tw-text-opacity, 1))}.text-red-600{--tw-text-opacity:1;color:rgb(220 38 38 / var(--tw-text-opacity, 1))}.text-white{--tw-text-opacity:1;color:rgb(255 255 255 / var(--tw-text-opacity, 1))}.text-yellow-700{--tw-text-opacity:1;color:rgb(161 98 7 / var(--tw-text-opacity, 1))}.text-red-500{--tw-text-opacity:1;color:rgb(239 68 68 / var(--tw-text-opacity, 1))}.text-blue-500{--tw-text-opacity:1;color:rgb(59 130 246 / var(--tw-text-opacity, 1))}.text-gray-400{--tw-text-opacity:1;color:rgb(156 163 175 / var(--tw-text-opacity, 1))}.text-green-500{--tw-text-opacity:1;color:rgb(34 197 94 / var(--tw-text-opacity, 1))}.line-through{-webkit-text-decoration-line:line-through;text-decoration-line:line-through}.no-underline{-webkit-text-decoration-line:none;text-decoration-line:none}.shadow-inner{--tw-shadow:inset 0 2px 4px 0 rgb(0 0 0 / 0.05);--tw-shadow-colored:inset 0 2px 4px 0 var(--tw-shadow-color);box-shadow:var(--tw-ring-offset-shadow, 0 0 #0000), var(--tw-ring-shadow, 0 0 #0000), var(--tw-shadow)}.shadow-lg{--tw-shadow:0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1);--tw-shadow-colored:0 10px 15px -3px var(--tw-shadow-color), 0 4px 6px -4px var(--tw-shadow-color);box-shadow:var(--tw-ring-offset-shadow, 0 0 #0000), var(--tw-ring-shadow, 0 0 #0000), var(--tw-shadow)}.shadow-md{--tw-shadow:0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);--tw-shadow-colored:0 4px 6px -1px var(--tw-shadow-color), 0 2px 4px -2px var(--tw-shadow-color);box-shadow:var(--tw-ring-offset-shadow, 0 0 #0000), var(--tw-ring-shadow, 0 0 #0000), var(--tw-shadow)}.shadow-sm{--tw-shadow:0 1px 2px 0 rgb(0 0 0 / 0.05);--tw-shadow-colored:0 1px 2px 0 var(--tw-shadow-color);box-shadow:var(--tw-ring-offset-shadow, 0 0 #0000), var(--tw-ring-shadow, 0 0 #0000), var(--tw-shadow)}.shadow-xl{--tw-shadow:0 20px 25px -5px rgb(0 0 0 / 0.1), 0 8px 10px -6px rgb(0 0 0 / 0.1);--tw-shadow-colored:0 20px 25px -5px var(--tw-shadow-color), 0 8px 10px -6px var(--tw-shadow-color);box-shadow:var(--tw-ring-offset-shadow, 0 0 #0000), var(--tw-ring-shadow, 0 0 #0000), var(--tw-shadow)}.ring-2{--tw-ring-offset-shadow:var(--tw-ring-inset) 0 0 0 var(--tw-ring-offset-width) var(--tw-ring-offset-color);--tw-ring-shadow:var(--tw-ring-inset) 0 0 0 calc(2px + var(--tw-ring-offset-width)) var(--tw-ring-color);box-shadow:var(--tw-ring-offset-shadow), var(--tw-ring-shadow), var(--tw-shadow, 0 0 #0000)}.ring-indigo-500{--tw-ring-opacity:1;--tw-ring-color:rgb(99 102 241 / var(--tw-ring-opacity, 1))}.transition{transition-property:color, background-color, border-color, fill, stroke, opacity, box-shadow, transform, filter, -webkit-text-decoration-color, -webkit-backdrop-filter;transition-property:color, background-color, border-color, text-decoration-color, fill, stroke, opacity, box-shadow, transform, filter, backdrop-filter;transition-property:color, background-color, border-color, text-decoration-color, fill, stroke, opacity, box-shadow, transform, filter, backdrop-filter, -webkit-text-decoration-color, -webkit-backdrop-filter;transition-timing-function:cubic-bezier(0.4, 0, 0.2, 1);transition-duration:150ms}.duration-150{transition-duration:150ms}.hover\:border-gray-300:hover{--tw-border-opacity:1;border-color:rgb(209 213 219 / var(--tw-border-opacity, 1))}.hover\:bg-green-600:hover{--tw-bg-opacity:1;background-color:rgb(22 163 74 / var(--tw-bg-opacity, 1))}.hover\:bg-green-700:hover{--tw-bg-opacity:1;background-color:rgb(21 128 61 / var(--tw-bg-opacity, 1))}.hover\:bg-indigo-600:hover{--tw-bg-opacity:1;background-color:rgb(79 70 229 / var(--tw-bg-opacity, 1))}.hover\:bg-purple-600:hover{--tw-bg-opacity:1;background-color:rgb(147 51 234 / var(--tw-bg-opacity, 1))}.hover\:bg-gray-50:hover{--tw-bg-opacity:1;background-color:rgb(249 250 251 / var(--tw-bg-opacity, 1))}.hover\:text-gray-700:hover{--tw-text-opacity:1;color:rgb(55 65 81 / var(--tw-text-opacity, 1))}.hover\:text-blue-700:hover{--tw-text-opacity:1;color:rgb(29 78 216 / var(--tw-text-opacity, 1))}.hover\:text-indigo-700:hover{--tw-text-opacity:1;color:rgb(67 56 202 / var(--tw-text-opacity, 1))}.hover\:text-red-700:hover{--tw-text-opacity:1;color:rgb(185 28 28 / var(--tw-text-opacity, 1))}.focus\:border-indigo-500:focus{--tw-border-opacity:1;border-color:rgb(99 102 241 / var(--tw-border-opacity, 1))}.focus\:ring-indigo-500:focus{--tw-ring-opacity:1;--tw-ring-color:rgb(99 102 241 / var(--tw-ring-opacity, 1))}@media (min-width: 640px){.sm\:order-none{order:0}.sm\:w-auto{width:auto}.sm\:flex-row{flex-direction:row}.sm\:items-center{align-items:center}.sm\:space-x-4 > :not([hidden]) ~ :not([hidden]){--tw-space-x-reverse:0;margin-right:calc(1rem * var(--tw-space-x-reverse));margin-left:calc(1rem * calc(1 - var(--tw-space-x-reverse)))}.sm\:space-y-0 > :not([hidden]) ~ :not([hidden]){--tw-space-y-reverse:0;margin-top:calc(0px * calc(1 - var(--tw-space-y-reverse)));margin-bottom:calc(0px * var(--tw-space-y-reverse))}.sm\:p-8{padding:2rem}}</style></head>
+<body>
+
+    <div id="app" class="max-w-7xl mx-auto p-4 sm:p-8">
+        <h1 class="text-3xl font-extrabold text-gray-800 mb-8 text-center">
+            CMS 파일 송수신 업무 달력 (공유)
+        </h1>
+        
+        <!-- 로딩 및 상태 표시 -->
+        <div id="loadingIndicator" class="text-center text-lg font-semibold text-indigo-600 mb-4 p-3 rounded-lg shadow-inner bg-green-100">
+            <span id="sync-status">ℹ️ holidays.csv 로드 대기중</span>
+        </div>
+        
+        <!-- Tab Navigation -->
+        <div class="mb-4 border-b border-gray-200">
+            <nav class="-mb-px flex space-x-8" aria-label="Tabs">
+                <button data-tab="calendar" class="tab-button whitespace-nowrap py-3 px-1 border-b-2 font-medium text-sm border-transparent text-gray-500 hover:border-gray-300 hover:text-gray-700">
+                    업무 달력 및 기준
+                </button>
+                <button data-tab="holiday" class="tab-button whitespace-nowrap py-3 px-1 border-b-2 font-medium text-sm border-transparent text-gray-500 hover:border-gray-300 hover:text-gray-700 tab-active border-indigo-500 text-indigo-600">
+                    공휴일 관리 (공유됨)
+                </button>
+            </nav>
+        </div>
+
+        <!-- Tab Content: Calendar and Criteria -->
+        <div id="calendar" class="tab-content hidden">
+            <!-- Calendar Header and Navigation -->
+            <div class="flex justify-between items-center bg-white p-4 mb-4 rounded-xl shadow-md border border-gray-100 flex-wrap gap-4">
+                <button id="prevMonth" class="px-4 py-2 bg-indigo-500 text-white rounded-full hover:bg-indigo-600 transition duration-150 shadow-lg flex items-center text-sm order-1 sm:order-none">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-1" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M12.707 5.293a1 1 0 010 1.414L9.414 10l3.293 3.293a1 1 0 01-1.414 1.414l-4-4a1 1 0 010-1.414l4-4a1 1 0 011.414 0z" clip-rule="evenodd"></path></svg>
+                    이전 달
+                </button>
+                
+                <!-- Year and Month Selectors -->
+                <div id="monthYearSelectors" class="flex items-center space-x-2 order-3 sm:order-none w-full sm:w-auto justify-center">
+                    <select id="yearSelector" class="px-3 py-2 border border-gray-300 rounded-md focus:ring-indigo-500 focus:border-indigo-500 shadow-sm text-sm font-medium"><option value="2023">2023</option><option value="2024">2024</option><option value="2025">2025</option><option value="2026">2026</option><option value="2027">2027</option><option value="2028">2028</option></select>
+                    <span class="text-gray-600 font-bold text-lg">년</span>
+                    <select id="monthSelector" class="px-3 py-2 border border-gray-300 rounded-md focus:ring-indigo-500 focus:border-indigo-500 shadow-sm text-sm font-medium"><option value="1">1</option><option value="2">2</option><option value="3">3</option><option value="4">4</option><option value="5">5</option><option value="6">6</option><option value="7">7</option><option value="8">8</option><option value="9">9</option><option value="10">10</option><option value="11">11</option><option value="12">12</option></select>
+                    <span class="text-gray-600 font-bold text-lg">월</span>
+                </div>
+
+                <h2 id="currentMonthYear" class="text-xl font-bold text-gray-700 hidden">2026년 9월</h2>
+                
+                <button id="nextMonth" class="px-4 py-2 bg-indigo-500 text-white rounded-full hover:bg-indigo-600 transition duration-150 shadow-lg flex items-center text-sm order-2 sm:order-none">
+                    다음 달
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 ml-1" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M7.293 14.707a1 1 0 010-1.414L10.586 10 7.293 6.707a1 1 0 011.414-1.414l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414 0z" clip-rule="evenodd"></path></svg>
+                </button>
+            </div>
+            
+            <!-- 인쇄 시 달력 제목 -->
+            <h3 class="print-header" id="printHeader">2026년 9월 CMS 파일 송수신 업무 달력</h3>
+
+            <!-- Calendar Grid Container -->
+            <div class="calendar-container bg-white shadow-xl rounded-xl p-0">
+                <!-- Day Headers -->
+                <div class="calendar-grid">
+                    <div class="day-header day-0 text-red-600">일</div>
+                    <div class="day-header text-gray-700">월</div>
+                    <div class="day-header text-gray-700">화</div>
+                    <div class="day-header text-gray-700">수</div>
+                    <div class="day-header text-gray-700">목</div>
+                    <div class="day-header text-gray-700">금</div>
+                    <div class="day-header day-6 text-blue-600">토</div>
+                </div>
+
+                <!-- Day Cells will be rendered here -->
+                <div id="calendarDays" class="calendar-grid">
+                    <div class="day-cell other-month">
+                        <span class="day-number day-0 text-red-600">30</span>
+                        
+                    </div>
+                
+                    <div class="day-cell other-month">
+                        <span class="day-number">31</span>
+                        
+                    </div>
+                
+                    <div class="day-cell">
+                        <span class="day-number">1</span>
+                        
+                            <div class="task-block color-group-send" title="EB13/EI13(출금신청/동의): UBMS→금결원 오전 10시">
+                                <span class="task-code">EB13/EI13(출금신청/동의)</span><br>
+                                <span class="task-detail">UBMS→금결원 오전 10시</span>
+                            </div>
+                        
+                    </div>
+                
+                    <div class="day-cell">
+                        <span class="day-number">2</span>
+                        
+                    </div>
+                
+                    <div class="day-cell">
+                        <span class="day-number">3</span>
+                        
+                            <div class="task-block color-group-receive" title="EB14(출금신청 결과): 금결원→UBMS 오후 1시">
+                                <span class="task-code">EB14(출금신청 결과)</span><br>
+                                <span class="task-detail">금결원→UBMS 오후 1시</span>
+                            </div>
+                        
+                    </div>
+                
+                    <div class="day-cell">
+                        <span class="day-number">4</span>
+                        
+                            <div class="task-block color-group-send" title="EB21(출금의뢰): UBMS→금결원 오후 1시">
+                                <span class="task-code">EB21(출금의뢰)</span><br>
+                                <span class="task-detail">UBMS→금결원 오후 1시</span>
+                            </div>
+                        
+                    </div>
+                
+                    <div class="day-cell !bg-red-50 !bg-opacity-80">
+                        <span class="day-number day-6 text-blue-600">5</span>
+                        
+                    </div>
+                
+                    <div class="day-cell !bg-red-50 !bg-opacity-80">
+                        <span class="day-number day-0 text-red-600">6</span>
+                        
+                    </div>
+                
+                    <div class="day-cell">
+                        <span class="day-number">7</span>
+                        
+                    </div>
+                
+                    <div class="day-cell">
+                        <span class="day-number">8</span>
+                        
+                            <div class="task-block color-group-receive" title="EB22(출금의뢰 결과): 금결원→UBMS 오전 9시">
+                                <span class="task-code">EB22(출금의뢰 결과)</span><br>
+                                <span class="task-detail">금결원→UBMS 오전 9시</span>
+                            </div>
+                        
+                            <div class="task-block color-group-send" title="EB31(입금의뢰): UBMS→금결원 오후 12시">
+                                <span class="task-code">EB31(입금의뢰)</span><br>
+                                <span class="task-detail">UBMS→금결원 오후 12시</span>
+                            </div>
+                        
+                    </div>
+                
+                    <div class="day-cell">
+                        <span class="day-number">9</span>
+                        
+                    </div>
+                
+                    <div class="day-cell">
+                        <span class="day-number">10</span>
+                        
+                            <div class="task-block color-group-receive" title="EB32(입금의뢰 결과): 금결원→UBMS 오후 1시">
+                                <span class="task-code">EB32(입금의뢰 결과)</span><br>
+                                <span class="task-detail">금결원→UBMS 오후 1시</span>
+                            </div>
+                        
+                    </div>
+                
+                    <div class="day-cell">
+                        <span class="day-number">11</span>
+                        
+                            <div class="task-block color-group-send" title="EB13/EI13(출금신청/동의): UBMS→금결원 오전 10시">
+                                <span class="task-code">EB13/EI13(출금신청/동의)</span><br>
+                                <span class="task-detail">UBMS→금결원 오전 10시</span>
+                            </div>
+                        
+                    </div>
+                
+                    <div class="day-cell !bg-red-50 !bg-opacity-80">
+                        <span class="day-number day-6 text-blue-600">12</span>
+                        
+                    </div>
+                
+                    <div class="day-cell !bg-red-50 !bg-opacity-80">
+                        <span class="day-number day-0 text-red-600">13</span>
+                        
+                    </div>
+                
+                    <div class="day-cell">
+                        <span class="day-number">14</span>
+                        
+                            <div class="task-block color-group-send" title="EB21(출금의뢰): UBMS→금결원 오후 1시">
+                                <span class="task-code">EB21(출금의뢰)</span><br>
+                                <span class="task-detail">UBMS→금결원 오후 1시</span>
+                            </div>
+                        
+                    </div>
+                
+                    <div class="day-cell">
+                        <span class="day-number">15</span>
+                        
+                            <div class="task-block color-group-receive" title="EB14(출금신청 결과): 금결원→UBMS 오후 1시">
+                                <span class="task-code">EB14(출금신청 결과)</span><br>
+                                <span class="task-detail">금결원→UBMS 오후 1시</span>
+                            </div>
+                        
+                    </div>
+                
+                    <div class="day-cell">
+                        <span class="day-number">16</span>
+                        
+                            <div class="task-block color-group-send" title="EB13/EI13(출금신청/동의): UBMS→금결원 오전 10시">
+                                <span class="task-code">EB13/EI13(출금신청/동의)</span><br>
+                                <span class="task-detail">UBMS→금결원 오전 10시</span>
+                            </div>
+                        
+                            <div class="task-block color-group-receive" title="EB22(출금의뢰 결과): 금결원→UBMS 오전 9시">
+                                <span class="task-code">EB22(출금의뢰 결과)</span><br>
+                                <span class="task-detail">금결원→UBMS 오전 9시</span>
+                            </div>
+                        
+                            <div class="task-block color-group-send" title="EB31(입금의뢰): UBMS→금결원 오후 12시">
+                                <span class="task-code">EB31(입금의뢰)</span><br>
+                                <span class="task-detail">UBMS→금결원 오후 12시</span>
+                            </div>
+                        
+                    </div>
+                
+                    <div class="day-cell">
+                        <span class="day-number">17</span>
+                        
+                    </div>
+                
+                    <div class="day-cell">
+                        <span class="day-number">18</span>
+                        
+                            <div class="task-block color-group-send" title="EB21(출금의뢰): UBMS→금결원 오후 1시">
+                                <span class="task-code">EB21(출금의뢰)</span><br>
+                                <span class="task-detail">UBMS→금결원 오후 1시</span>
+                            </div>
+                        
+                            <div class="task-block color-group-receive" title="EB14(출금신청 결과): 금결원→UBMS 오후 1시">
+                                <span class="task-code">EB14(출금신청 결과)</span><br>
+                                <span class="task-detail">금결원→UBMS 오후 1시</span>
+                            </div>
+                        
+                            <div class="task-block color-group-receive" title="EB32(입금의뢰 결과): 금결원→UBMS 오후 1시">
+                                <span class="task-code">EB32(입금의뢰 결과)</span><br>
+                                <span class="task-detail">금결원→UBMS 오후 1시</span>
+                            </div>
+                        
+                    </div>
+                
+                    <div class="day-cell !bg-red-50 !bg-opacity-80">
+                        <span class="day-number day-6 text-blue-600">19</span>
+                        
+                    </div>
+                
+                    <div class="day-cell !bg-red-50 !bg-opacity-80">
+                        <span class="day-number day-0 text-red-600">20</span>
+                        
+                    </div>
+                
+                    <div class="day-cell">
+                        <span class="day-number">21</span>
+                        
+                            <div class="task-block color-group-send" title="EB13/EI13(출금신청/동의): UBMS→금결원 오전 10시">
+                                <span class="task-code">EB13/EI13(출금신청/동의)</span><br>
+                                <span class="task-detail">UBMS→금결원 오전 10시</span>
+                            </div>
+                        
+                    </div>
+                
+                    <div class="day-cell">
+                        <span class="day-number">22</span>
+                        
+                            <div class="task-block color-group-receive" title="EB22(출금의뢰 결과): 금결원→UBMS 오전 9시">
+                                <span class="task-code">EB22(출금의뢰 결과)</span><br>
+                                <span class="task-detail">금결원→UBMS 오전 9시</span>
+                            </div>
+                        
+                            <div class="task-block color-group-send" title="EB31(입금의뢰): UBMS→금결원 오후 12시">
+                                <span class="task-code">EB31(입금의뢰)</span><br>
+                                <span class="task-detail">UBMS→금결원 오후 12시</span>
+                            </div>
+                        
+                    </div>
+                
+                    <div class="day-cell">
+                        <span class="day-number">23</span>
+                        
+                            <div class="task-block color-group-send" title="EB21(출금의뢰): UBMS→금결원 오후 1시">
+                                <span class="task-code">EB21(출금의뢰)</span><br>
+                                <span class="task-detail">UBMS→금결원 오후 1시</span>
+                            </div>
+                        
+                            <div class="task-block color-group-receive" title="EB14(출금신청 결과): 금결원→UBMS 오후 1시">
+                                <span class="task-code">EB14(출금신청 결과)</span><br>
+                                <span class="task-detail">금결원→UBMS 오후 1시</span>
+                            </div>
+                        
+                    </div>
+                
+                    <div class="day-cell !bg-red-50 !bg-opacity-80">
+                        <span class="day-number">24</span>
+                        
+                             <div class="holiday-text">
+                                 추석 연휴(전날)
+                             </div>
+                         
+                    </div>
+                
+                    <div class="day-cell !bg-red-50 !bg-opacity-80">
+                        <span class="day-number">25</span>
+                        
+                             <div class="holiday-text">
+                                 추석 연휴(전날)
+                             </div>
+                         
+                    </div>
+                
+                    <div class="day-cell !bg-red-50 !bg-opacity-80">
+                        <span class="day-number day-6 text-blue-600">26</span>
+                        
+                             <div class="holiday-text">
+                                 추석
+                             </div>
+                         
+                    </div>
+                
+                    <div class="day-cell !bg-red-50 !bg-opacity-80">
+                        <span class="day-number day-0 text-red-600">27</span>
+                        
+                             <div class="holiday-text">
+                                 추석 연휴(다음날)
+                             </div>
+                         
+                    </div>
+                
+                    <div class="day-cell">
+                        <span class="day-number">28</span>
+                        
+                            <div class="task-block color-group-receive" title="EB32(입금의뢰 결과): 금결원→UBMS 오후 1시">
+                                <span class="task-code">EB32(입금의뢰 결과)</span><br>
+                                <span class="task-detail">금결원→UBMS 오후 1시</span>
+                            </div>
+                        
+                    </div>
+                
+                    <div class="day-cell">
+                        <span class="day-number">29</span>
+                        
+                            <div class="task-block color-group-receive" title="EB22(출금의뢰 결과): 금결원→UBMS 오전 9시">
+                                <span class="task-code">EB22(출금의뢰 결과)</span><br>
+                                <span class="task-detail">금결원→UBMS 오전 9시</span>
+                            </div>
+                        
+                            <div class="task-block color-group-send" title="EB31(입금의뢰): UBMS→금결원 오후 12시">
+                                <span class="task-code">EB31(입금의뢰)</span><br>
+                                <span class="task-detail">UBMS→금결원 오후 12시</span>
+                            </div>
+                        
+                    </div>
+                
+                    <div class="day-cell">
+                        <span class="day-number">30</span>
+                        
+                    </div>
+                
+                    <div class="day-cell other-month">
+                        <span class="day-number">1</span>
+                        
+                            <div class="task-block color-group-receive" title="EB32(입금의뢰 결과): 금결원→UBMS 오후 1시">
+                                <span class="task-code">EB32(입금의뢰 결과)</span><br>
+                                <span class="task-detail">금결원→UBMS 오후 1시</span>
+                            </div>
+                        
+                    </div>
+                
+                    <div class="day-cell other-month">
+                        <span class="day-number">2</span>
+                        
+                    </div>
+                
+                    <div class="day-cell other-month">
+                        <span class="day-number day-6 text-blue-600">3</span>
+                        
+                    </div>
+                
+                    <div class="day-cell other-month">
+                        <span class="day-number day-0 text-red-600">4</span>
+                        
+                    </div>
+                
+                    <div class="day-cell other-month">
+                        <span class="day-number">5</span>
+                        
+                    </div>
+                
+                    <div class="day-cell other-month">
+                        <span class="day-number">6</span>
+                        
+                    </div>
+                
+                    <div class="day-cell other-month">
+                        <span class="day-number">7</span>
+                        
+                    </div>
+                
+                    <div class="day-cell other-month">
+                        <span class="day-number">8</span>
+                        
+                    </div>
+                
+                    <div class="day-cell other-month">
+                        <span class="day-number">9</span>
+                        
+                    </div>
+                
+                    <div class="day-cell other-month">
+                        <span class="day-number day-6 text-blue-600">10</span>
+                        
+                    </div>
+                </div>
+            </div>
+
+            <!-- 인쇄 버튼 -->
+            <div class="flex justify-center mt-6">
+                <button id="printBtn" class="px-6 py-3 bg-green-600 text-white font-semibold rounded-full hover:bg-green-700 transition duration-150 shadow-lg flex items-center">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-2" viewBox="0 0 20 20" fill="currentColor">
+                        <path fill-rule="evenodd" d="M5 4v3H4a2 2 0 00-2 2v10a2 2 0 002 2h12a2 2 0 002-2V9a2 2 0 00-2-2h-1V4a2 2 0 00-2-2H7a2 2 0 00-2 2zm2 5a1 1 0 00-1 1v5a1 1 0 102 0v-5a1 1 0 00-1-1zm3 0a1 1 0 00-1 1v5a1 1 0 102 0v-5a1 1 0 00-1-1zm3 0a1 1 0 00-1 1v5a1 1 0 102 0v-5a1 1 0 00-1-1z" clip-rule="evenodd"></path>
+                    </svg>
+                    현재 달력 인쇄 (Print)
+                </button>
+            </div>
+
+            <!-- CMS Task Processing and Criteria Section -->
+            <div class="mt-12 p-6 bg-white shadow-xl rounded-xl border-t-4 border-indigo-500">
+                <h3 class="text-xl font-bold text-gray-800 mb-4 border-b pb-2 flex items-center">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 inline-block text-indigo-500 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                      <path stroke-linecap="round" stroke-linejoin="round" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 002 2h2m-1 7h.01M15 7h.01M12 11h.01M15 11h.01M9 15h.01M12 15h.01M15 15h.01"></path>
+                    </svg>
+                    CMS 파일 송수신 업무처리 및 기준 (달력 표시에 사용됨)
+                </h3>
+                <div class="overflow-x-auto">
+                    <table class="min-w-full divide-y divide-gray-200">
+                        <thead class="bg-gray-50">
+                            <tr>
+                                <th class="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">단계</th>
+                                <th class="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">파일코드</th>
+                                <th class="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">기준일</th>
+                                <th class="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">송수신 업무</th>
+                                <th class="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">송수신 업무 마감시간</th>
+                                <th class="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">공휴일 처리</th>
+                            </tr>
+                        </thead>
+                        <tbody id="cms-criteria-body" class="bg-white divide-y divide-gray-200 text-sm">
+                <tr class="hover:bg-gray-50 ">
+                    <td class="px-3 py-2 whitespace-nowrap text-xs font-medium text-gray-800">출금신청/동의</td>
+                    <td class="px-3 py-2 whitespace-nowrap text-xs text-indigo-600 font-semibold">EB13/EI13</td>
+                    <td class="px-3 py-2 whitespace-nowrap text-xs text-gray-700">1,11,16,21일</td>
+                    <td class="px-3 py-2 text-xs text-gray-700">UBMS→금결원 오전 10시</td>
+                    <td class="px-3 py-2 text-xs text-gray-700">파일 수신 익 영업일 오후 12시</td>
+                    <td class="px-3 py-2 whitespace-nowrap text-xs text-red-500">다음 영업일</td>
+                </tr>
+            
+                <tr class="hover:bg-gray-50 ">
+                    <td class="px-3 py-2 whitespace-nowrap text-xs font-medium text-gray-800">출금의뢰</td>
+                    <td class="px-3 py-2 whitespace-nowrap text-xs text-indigo-600 font-semibold">EB21</td>
+                    <td class="px-3 py-2 whitespace-nowrap text-xs text-gray-700">4,14,19,24일</td>
+                    <td class="px-3 py-2 text-xs text-gray-700">UBMS→금결원 오후 1시</td>
+                    <td class="px-3 py-2 text-xs text-gray-700">파일 수신 당일 오후 5시</td>
+                    <td class="px-3 py-2 whitespace-nowrap text-xs text-red-500">이전 영업일</td>
+                </tr>
+            
+                <tr class="hover:bg-gray-50 ">
+                    <td class="px-3 py-2 whitespace-nowrap text-xs font-medium text-gray-800">출금신청 결과</td>
+                    <td class="px-3 py-2 whitespace-nowrap text-xs text-indigo-600 font-semibold">EB14</td>
+                    <td class="px-3 py-2 whitespace-nowrap text-xs text-gray-700">EB13/EI13파일 송신 +2영업일</td>
+                    <td class="px-3 py-2 text-xs text-gray-700">금결원→UBMS 오후 1시</td>
+                    <td class="px-3 py-2 text-xs text-gray-700">파일 수신 당일 오후 5시</td>
+                    <td class="px-3 py-2 whitespace-nowrap text-xs text-gray-700">-</td>
+                </tr>
+            
+                <tr class="hover:bg-gray-50 ">
+                    <td class="px-3 py-2 whitespace-nowrap text-xs font-medium text-gray-800">출금의뢰 결과</td>
+                    <td class="px-3 py-2 whitespace-nowrap text-xs text-indigo-600 font-semibold">EB22</td>
+                    <td class="px-3 py-2 whitespace-nowrap text-xs text-gray-700">EB21파일 송신 +2영업일</td>
+                    <td class="px-3 py-2 text-xs text-gray-700">금결원→UBMS 오전 9시</td>
+                    <td class="px-3 py-2 text-xs text-gray-700">파일 수신 당일 오후 12시</td>
+                    <td class="px-3 py-2 whitespace-nowrap text-xs text-gray-700">-</td>
+                </tr>
+            
+                <tr class="hover:bg-gray-50 ">
+                    <td class="px-3 py-2 whitespace-nowrap text-xs font-medium text-gray-800">입금의뢰</td>
+                    <td class="px-3 py-2 whitespace-nowrap text-xs text-indigo-600 font-semibold">EB31</td>
+                    <td class="px-3 py-2 whitespace-nowrap text-xs text-gray-700">EB21파일 송신 +2영업일</td>
+                    <td class="px-3 py-2 text-xs text-gray-700">UBMS→금결원 오후 12시</td>
+                    <td class="px-3 py-2 text-xs text-gray-700">파일 수신 익 영업일 오후 2시</td>
+                    <td class="px-3 py-2 whitespace-nowrap text-xs text-gray-700">-</td>
+                </tr>
+            
+                <tr class="hover:bg-gray-50 ">
+                    <td class="px-3 py-2 whitespace-nowrap text-xs font-medium text-gray-800">입금의뢰 결과</td>
+                    <td class="px-3 py-2 whitespace-nowrap text-xs text-indigo-600 font-semibold">EB32</td>
+                    <td class="px-3 py-2 whitespace-nowrap text-xs text-gray-700">EB31파일 송신 +2영업일</td>
+                    <td class="px-3 py-2 text-xs text-gray-700">금결원→UBMS 오후 1시</td>
+                    <td class="px-3 py-2 text-xs text-gray-700">파일 수신 당일 오후 5시</td>
+                    <td class="px-3 py-2 whitespace-nowrap text-xs text-gray-700">-</td>
+                </tr>
+            
+                <tr class="hover:bg-gray-50 bg-gray-100 text-gray-500">
+                    <td class="px-3 py-2 whitespace-nowrap text-xs font-medium text-gray-800">출금(실제 출금일)</td>
+                    <td class="px-3 py-2 whitespace-nowrap text-xs ">-</td>
+                    <td class="px-3 py-2 whitespace-nowrap text-xs text-gray-700">5,15,20,25일</td>
+                    <td class="px-3 py-2 text-xs text-gray-700">-</td>
+                    <td class="px-3 py-2 text-xs text-gray-700">-</td>
+                    <td class="px-3 py-2 whitespace-nowrap text-xs text-red-500">다음 영업일</td>
+                </tr>
+            
+                <tr class="hover:bg-gray-50 bg-gray-100 text-gray-500">
+                    <td class="px-3 py-2 whitespace-nowrap text-xs font-medium text-gray-800">입금(실제 입금일)</td>
+                    <td class="px-3 py-2 whitespace-nowrap text-xs ">-</td>
+                    <td class="px-3 py-2 whitespace-nowrap text-xs text-gray-700">출금일 +3영업일</td>
+                    <td class="px-3 py-2 text-xs text-gray-700">-</td>
+                    <td class="px-3 py-2 text-xs text-gray-700">-</td>
+                    <td class="px-3 py-2 whitespace-nowrap text-xs text-gray-700">-</td>
+                </tr>
+            </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <!-- Tab Content: Holiday Management -->
+        <div id="holiday" class="tab-content">
+            <div class="p-6 bg-white shadow-xl rounded-xl border-t-4 border-indigo-500">
+                <h3 class="text-xl font-bold text-gray-800 mb-4 pb-2 flex items-center border-b">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 inline-block text-indigo-500 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M8 7V3m8 4V3m-9 8h.01M9 11h.01M12 11h.01M15 11h.01M9 15h.01M12 15h.01M15 15h.01M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"></path>
+                    </svg>
+                    연도별 공휴일 조회 및 관리 (holidays.csv 기반)
+                </h3>
+                
+                <div class="p-4 bg-yellow-50 border-l-4 border-yellow-400 text-yellow-700 mb-6 rounded">
+                    <p class="font-bold text-sm">❗ 중요 안내: 공휴일 데이터(중앙 관리)</p>
+                    <p class="text-xs">
+                        이 달력은 같은 경로의 **`holidays.csv`** 파일을 읽어서 사용자 공휴일을 표시합니다.
+                        공휴일을 수정하려면 `holidays.csv`를 수정해서 깃허브에 반영한 뒤, 아래 **'다시 적용'**을 누르거나 새로고침 하세요.
+                        <br>
+                        👉 권장 컬럼명: `date`, `name` (또는 `날짜`, `공휴일명`). 날짜 형식은 `YYYY-MM-DD` 또는 `YYYY. MM. DD` 모두 인식합니다.
+                        <br>
+                        💾 **시스템 공휴일 제외 설정을 다른 사람과 공유하려면**: "설정 내보내기" 버튼으로 JSON 파일을 저장한 후, 다른 사람이 "설정 가져오기" 버튼으로 동일한 파일을 불러오면 됩니다. (제외된 공휴일 목록이 자동으로 localStorage에도 저장됩니다)
+                    </p>
+                </div>
+                
+                <!-- 새로고침 및 내보내기/가져오기 버튼 -->
+                <div class="mb-4 flex justify-end gap-2 flex-wrap">
+                    <button id="exportSettingsBtn" class="px-4 py-2 bg-green-500 text-white font-semibold rounded-md hover:bg-green-600 transition duration-150 shadow-md flex items-center">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
+                        </svg>
+                        설정 내보내기
+                    </button>
+                    <button id="importSettingsBtn" class="px-4 py-2 bg-purple-500 text-white font-semibold rounded-md hover:bg-purple-600 transition duration-150 shadow-md flex items-center">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
+                        </svg>
+                        설정 가져오기
+                    </button>
+                    <input type="file" id="importSettingsFile" accept=".json" class="hidden">
+                    <button id="refreshDataBtn" class="px-4 py-2 bg-indigo-500 text-white font-semibold rounded-md hover:bg-indigo-600 transition duration-150 shadow-md flex items-center">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path>
+                        </svg>
+                        다시 적용
+                    </button>
+                </div>
+
+
+                <!-- 연도 선택 -->
+                <div class="flex flex-col sm:flex-row items-end sm:items-center space-y-4 sm:space-y-0 sm:space-x-4 mb-8 p-4 border rounded-lg bg-gray-50">
+                    <div class="flex flex-col w-full sm:w-auto">
+                        <label for="holidayYearSelector" class="text-sm font-medium text-gray-700 mb-1">관리 연도 선택</label>
+                        <select id="holidayYearSelector" class="px-3 py-2 border border-gray-300 rounded-md focus:ring-indigo-500 focus:border-indigo-500 shadow-sm w-full font-medium"><option value="2024">2024</option><option value="2025">2025</option><option value="2026">2026</option><option value="2027">2027</option><option value="2028">2028</option></select>
+                    </div>
+                </div>
+                
+                <!-- 에러 메시지 표시 영역 -->
+                <p id="holiday-error" class="text-sm text-red-600 mb-4 hidden font-medium"></p>
+
+                <p class="text-sm text-gray-600 mb-4">
+                    ※ 선택된 연도의 **전체 공휴일** 목록입니다 (시스템 공휴일 + 로컬 사용자 공휴일).
+                    사용자 공휴일은 이 화면에서 추가/수정/삭제할 수 있고, "엑셀/CSV 가져오기"로 일괄 반영할 수도 있습니다.
+                </p>
+
+                <!-- 공휴일 목록 -->
+                <h4 class="text-lg font-semibold text-gray-800 mb-3" id="holidayListHeader">2026년 전체 공휴일 목록 및 관리</h4>
+                <ul id="holiday-list" class="space-y-2"><h5 class="text-base font-semibold text-gray-700 mt-4 mb-2">활성 공휴일 (20개)</h5>
+                            <li class="flex justify-between items-center bg-white p-3 rounded-lg border shadow-sm text-sm">
+                                <span class="font-semibold text-gray-800">2026-01-01</span>
+                                <span class="text-gray-600 ml-4">신정</span>
+                                <span class="text-xs font-medium text-blue-500 bg-gray-100 px-2 py-1 rounded-full ml-auto mr-3">시스템</span>
+                                <button data-date="2026-01-01" data-system="true" class="delete-holiday-btn text-red-500 hover:text-red-700 font-medium transition duration-150">
+                                    제외
+                                </button>
+                            </li>
+                        
+                            <li class="flex justify-between items-center bg-white p-3 rounded-lg border shadow-sm text-sm">
+                                <span class="font-semibold text-gray-800">2026-02-16</span>
+                                <span class="text-gray-600 ml-4">설날 연휴(전날)</span>
+                                <span class="text-xs font-medium text-blue-500 bg-gray-100 px-2 py-1 rounded-full ml-auto mr-3">시스템</span>
+                                <button data-date="2026-02-16" data-system="true" class="delete-holiday-btn text-red-500 hover:text-red-700 font-medium transition duration-150">
+                                    제외
+                                </button>
+                            </li>
+                        
+                            <li class="flex justify-between items-center bg-white p-3 rounded-lg border shadow-sm text-sm">
+                                <span class="font-semibold text-gray-800">2026-02-17</span>
+                                <span class="text-gray-600 ml-4">설날</span>
+                                <span class="text-xs font-medium text-blue-500 bg-gray-100 px-2 py-1 rounded-full ml-auto mr-3">시스템</span>
+                                <button data-date="2026-02-17" data-system="true" class="delete-holiday-btn text-red-500 hover:text-red-700 font-medium transition duration-150">
+                                    제외
+                                </button>
+                            </li>
+                        
+                            <li class="flex justify-between items-center bg-white p-3 rounded-lg border shadow-sm text-sm">
+                                <span class="font-semibold text-gray-800">2026-02-18</span>
+                                <span class="text-gray-600 ml-4">설날 연휴(다음날)</span>
+                                <span class="text-xs font-medium text-blue-500 bg-gray-100 px-2 py-1 rounded-full ml-auto mr-3">시스템</span>
+                                <button data-date="2026-02-18" data-system="true" class="delete-holiday-btn text-red-500 hover:text-red-700 font-medium transition duration-150">
+                                    제외
+                                </button>
+                            </li>
+                        
+                            <li class="flex justify-between items-center bg-white p-3 rounded-lg border shadow-sm text-sm">
+                                <span class="font-semibold text-gray-800">2026-03-01</span>
+                                <span class="text-gray-600 ml-4">삼일절</span>
+                                <span class="text-xs font-medium text-blue-500 bg-gray-100 px-2 py-1 rounded-full ml-auto mr-3">시스템</span>
+                                <button data-date="2026-03-01" data-system="true" class="delete-holiday-btn text-red-500 hover:text-red-700 font-medium transition duration-150">
+                                    제외
+                                </button>
+                            </li>
+                        
+                            <li class="flex justify-between items-center bg-white p-3 rounded-lg border shadow-sm text-sm">
+                                <span class="font-semibold text-gray-800">2026-03-02</span>
+                                <span class="text-gray-600 ml-4">대체공휴일 (삼일절) (대체)</span>
+                                <span class="text-xs font-medium text-blue-500 bg-gray-100 px-2 py-1 rounded-full ml-auto mr-3">시스템</span>
+                                <button data-date="2026-03-02" data-system="true" class="delete-holiday-btn text-red-500 hover:text-red-700 font-medium transition duration-150">
+                                    제외
+                                </button>
+                            </li>
+                        
+                            <li class="flex justify-between items-center bg-white p-3 rounded-lg border shadow-sm text-sm">
+                                <span class="font-semibold text-gray-800">2026-05-05</span>
+                                <span class="text-gray-600 ml-4">어린이날</span>
+                                <span class="text-xs font-medium text-blue-500 bg-gray-100 px-2 py-1 rounded-full ml-auto mr-3">시스템</span>
+                                <button data-date="2026-05-05" data-system="true" class="delete-holiday-btn text-red-500 hover:text-red-700 font-medium transition duration-150">
+                                    제외
+                                </button>
+                            </li>
+                        
+                            <li class="flex justify-between items-center bg-white p-3 rounded-lg border shadow-sm text-sm">
+                                <span class="font-semibold text-gray-800">2026-06-06</span>
+                                <span class="text-gray-600 ml-4">현충일</span>
+                                <span class="text-xs font-medium text-blue-500 bg-gray-100 px-2 py-1 rounded-full ml-auto mr-3">시스템</span>
+                                <button data-date="2026-06-06" data-system="true" class="delete-holiday-btn text-red-500 hover:text-red-700 font-medium transition duration-150">
+                                    제외
+                                </button>
+                            </li>
+                        
+                            <li class="flex justify-between items-center bg-white p-3 rounded-lg border shadow-sm text-sm">
+                                <span class="font-semibold text-gray-800">2026-08-15</span>
+                                <span class="text-gray-600 ml-4">광복절</span>
+                                <span class="text-xs font-medium text-blue-500 bg-gray-100 px-2 py-1 rounded-full ml-auto mr-3">시스템</span>
+                                <button data-date="2026-08-15" data-system="true" class="delete-holiday-btn text-red-500 hover:text-red-700 font-medium transition duration-150">
+                                    제외
+                                </button>
+                            </li>
+                        
+                            <li class="flex justify-between items-center bg-white p-3 rounded-lg border shadow-sm text-sm">
+                                <span class="font-semibold text-gray-800">2026-09-25</span>
+                                <span class="text-gray-600 ml-4">추석 연휴(전날)</span>
+                                <span class="text-xs font-medium text-blue-500 bg-gray-100 px-2 py-1 rounded-full ml-auto mr-3">시스템</span>
+                                <button data-date="2026-09-25" data-system="true" class="delete-holiday-btn text-red-500 hover:text-red-700 font-medium transition duration-150">
+                                    제외
+                                </button>
+                            </li>
+                        
+                            <li class="flex justify-between items-center bg-white p-3 rounded-lg border shadow-sm text-sm">
+                                <span class="font-semibold text-gray-800">2026-09-26</span>
+                                <span class="text-gray-600 ml-4">추석</span>
+                                <span class="text-xs font-medium text-blue-500 bg-gray-100 px-2 py-1 rounded-full ml-auto mr-3">시스템</span>
+                                <button data-date="2026-09-26" data-system="true" class="delete-holiday-btn text-red-500 hover:text-red-700 font-medium transition duration-150">
+                                    제외
+                                </button>
+                            </li>
+                        
+                            <li class="flex justify-between items-center bg-white p-3 rounded-lg border shadow-sm text-sm">
+                                <span class="font-semibold text-gray-800">2026-09-27</span>
+                                <span class="text-gray-600 ml-4">추석 연휴(다음날)</span>
+                                <span class="text-xs font-medium text-blue-500 bg-gray-100 px-2 py-1 rounded-full ml-auto mr-3">시스템</span>
+                                <button data-date="2026-09-27" data-system="true" class="delete-holiday-btn text-red-500 hover:text-red-700 font-medium transition duration-150">
+                                    제외
+                                </button>
+                            </li>
+                        
+                            <li class="flex justify-between items-center bg-white p-3 rounded-lg border shadow-sm text-sm">
+                                <span class="font-semibold text-gray-800">2026-10-03</span>
+                                <span class="text-gray-600 ml-4">개천절</span>
+                                <span class="text-xs font-medium text-blue-500 bg-gray-100 px-2 py-1 rounded-full ml-auto mr-3">시스템</span>
+                                <button data-date="2026-10-03" data-system="true" class="delete-holiday-btn text-red-500 hover:text-red-700 font-medium transition duration-150">
+                                    제외
+                                </button>
+                            </li>
+                        
+                            <li class="flex justify-between items-center bg-white p-3 rounded-lg border shadow-sm text-sm">
+                                <span class="font-semibold text-gray-800">2026-10-09</span>
+                                <span class="text-gray-600 ml-4">한글날</span>
+                                <span class="text-xs font-medium text-blue-500 bg-gray-100 px-2 py-1 rounded-full ml-auto mr-3">시스템</span>
+                                <button data-date="2026-10-09" data-system="true" class="delete-holiday-btn text-red-500 hover:text-red-700 font-medium transition duration-150">
+                                    제외
+                                </button>
+                            </li>
+                        
+                            <li class="flex justify-between items-center bg-white p-3 rounded-lg border shadow-sm text-sm">
+                                <span class="font-semibold text-gray-800">2026-12-25</span>
+                                <span class="text-gray-600 ml-4">성탄절</span>
+                                <span class="text-xs font-medium text-blue-500 bg-gray-100 px-2 py-1 rounded-full ml-auto mr-3">시스템</span>
+                                <button data-date="2026-12-25" data-system="true" class="delete-holiday-btn text-red-500 hover:text-red-700 font-medium transition duration-150">
+                                    제외
+                                </button>
+                            </li>
+                        
+                            <li class="flex justify-between items-center bg-white p-3 rounded-lg border shadow-sm text-sm">
+                                <span class="font-semibold text-gray-800">2026-05-25</span>
+                                <span class="text-gray-600 ml-4">대체공휴일(부처님오신날)</span>
+                                <span class="text-xs font-medium text-green-500 bg-gray-100 px-2 py-1 rounded-full ml-auto mr-3">사용자</span>
+                                <div class="flex gap-2">
+                                    <button data-date="2026-05-25" class="edit-holiday-btn text-blue-500 hover:text-blue-700 font-medium transition duration-150">
+                                        수정
+                                    </button>
+                                    <button data-date="2026-05-25" data-system="false" class="delete-holiday-btn text-red-500 hover:text-red-700 font-medium transition duration-150">
+                                        완전 삭제
+                                    </button>
+                                </div>
+                            </li>
+                        
+                            <li class="flex justify-between items-center bg-white p-3 rounded-lg border shadow-sm text-sm">
+                                <span class="font-semibold text-gray-800">2026-06-03</span>
+                                <span class="text-gray-600 ml-4">9회 지방선거</span>
+                                <span class="text-xs font-medium text-green-500 bg-gray-100 px-2 py-1 rounded-full ml-auto mr-3">사용자</span>
+                                <div class="flex gap-2">
+                                    <button data-date="2026-06-03" class="edit-holiday-btn text-blue-500 hover:text-blue-700 font-medium transition duration-150">
+                                        수정
+                                    </button>
+                                    <button data-date="2026-06-03" data-system="false" class="delete-holiday-btn text-red-500 hover:text-red-700 font-medium transition duration-150">
+                                        완전 삭제
+                                    </button>
+                                </div>
+                            </li>
+                        
+                            <li class="flex justify-between items-center bg-white p-3 rounded-lg border shadow-sm text-sm">
+                                <span class="font-semibold text-gray-800">2026-08-17</span>
+                                <span class="text-gray-600 ml-4">대체공휴일(광복절)</span>
+                                <span class="text-xs font-medium text-green-500 bg-gray-100 px-2 py-1 rounded-full ml-auto mr-3">사용자</span>
+                                <div class="flex gap-2">
+                                    <button data-date="2026-08-17" class="edit-holiday-btn text-blue-500 hover:text-blue-700 font-medium transition duration-150">
+                                        수정
+                                    </button>
+                                    <button data-date="2026-08-17" data-system="false" class="delete-holiday-btn text-red-500 hover:text-red-700 font-medium transition duration-150">
+                                        완전 삭제
+                                    </button>
+                                </div>
+                            </li>
+                        
+                            <li class="flex justify-between items-center bg-white p-3 rounded-lg border shadow-sm text-sm">
+                                <span class="font-semibold text-gray-800">2026-09-24</span>
+                                <span class="text-gray-600 ml-4">추석 연휴(전날)</span>
+                                <span class="text-xs font-medium text-green-500 bg-gray-100 px-2 py-1 rounded-full ml-auto mr-3">사용자</span>
+                                <div class="flex gap-2">
+                                    <button data-date="2026-09-24" class="edit-holiday-btn text-blue-500 hover:text-blue-700 font-medium transition duration-150">
+                                        수정
+                                    </button>
+                                    <button data-date="2026-09-24" data-system="false" class="delete-holiday-btn text-red-500 hover:text-red-700 font-medium transition duration-150">
+                                        완전 삭제
+                                    </button>
+                                </div>
+                            </li>
+                        
+                            <li class="flex justify-between items-center bg-white p-3 rounded-lg border shadow-sm text-sm">
+                                <span class="font-semibold text-gray-800">2026-10-05</span>
+                                <span class="text-gray-600 ml-4">대체공휴일(개천절)</span>
+                                <span class="text-xs font-medium text-green-500 bg-gray-100 px-2 py-1 rounded-full ml-auto mr-3">사용자</span>
+                                <div class="flex gap-2">
+                                    <button data-date="2026-10-05" class="edit-holiday-btn text-blue-500 hover:text-blue-700 font-medium transition duration-150">
+                                        수정
+                                    </button>
+                                    <button data-date="2026-10-05" data-system="false" class="delete-holiday-btn text-red-500 hover:text-red-700 font-medium transition duration-150">
+                                        완전 삭제
+                                    </button>
+                                </div>
+                            </li>
+                        <h5 class="text-base font-semibold text-gray-700 mt-8 mb-2 border-t pt-4">삭제/제외된 공휴일 (2개)</h5>
+                        <li class="flex justify-between items-center bg-gray-100 p-3 rounded-lg border border-dashed text-sm line-through text-gray-500">
+                            <span class="font-semibold">2026-05-13</span>
+                            <span class="ml-4">부처님 오신 날</span>
+                            <span class="text-xs font-medium text-gray-400 bg-white px-2 py-1 rounded-full ml-auto mr-3">제외됨 (시스템)</span>
+                            <button data-date="2026-05-13" class="restore-holiday-btn text-indigo-500 hover:text-indigo-700 font-medium transition duration-150 ml-3 no-underline">
+                                복구
+                            </button>
+                        </li>
+                    
+                        <li class="flex justify-between items-center bg-gray-100 p-3 rounded-lg border border-dashed text-sm line-through text-gray-500">
+                            <span class="font-semibold">2026-09-28</span>
+                            <span class="ml-4">대체공휴일 (추석)</span>
+                            <span class="text-xs font-medium text-gray-400 bg-white px-2 py-1 rounded-full ml-auto mr-3">제외됨 (시스템)</span>
+                            <button data-date="2026-09-28" class="restore-holiday-btn text-indigo-500 hover:text-indigo-700 font-medium transition duration-150 ml-3 no-underline">
+                                복구
+                            </button>
+                        </li>
+                    </ul>
+            </div>
+        </div>
+
+    </div>
+
+    <script>
+        // Local State Variables (User holidays loaded from holidays.csv)
+        let USER_HOLIDAYS = []; // 사용자 정의 공휴일 (holidays.csv에서 읽어옴)
+        let DELETED_HOLIDAYS = []; // 달력에서 제외된 법정/사용자 공휴일 날짜 목록 (YYYY-MM-DD)
+        let SYSTEM_HOLIDAY_OVERRIDES = {}; // 시스템 공휴일 이름 로컬 수정 값 { 'YYYY-MM-DD': '새 이름' }
+        
+        // localStorage 키
+        const STORAGE_KEY_DELETED_HOLIDAYS = 'cms_calendar_deleted_holidays';
+        const STORAGE_KEY_SYSTEM_HOLIDAY_OVERRIDES = 'cms_calendar_system_holiday_overrides';
+
+        // loadRemoteSettings(): /holidays.json에서 중앙 설정을 읽어와 로컬에 값이 없을 때만 적용합니다.
+        async function loadRemoteSettings() {
+          const remoteUrl = '/holidays.json';
+          try {
+            const resp = await fetch(remoteUrl, { method: 'GET', cache: 'no-cache' });
+            if (!resp.ok) { console.log('remote settings: fetch failed', resp.status); return; }
+            const settings = await resp.json();
+
+            // deletedHolidays: 로컬에 키가 없을 때만 적용
+            if (Array.isArray(settings.deletedHolidays)) {
+              if (!localStorage.getItem(STORAGE_KEY_DELETED_HOLIDAYS)) {
+                DELETED_HOLIDAYS = settings.deletedHolidays.slice();
+                try { saveDeletedHolidaysToStorage(); } catch(e){ /* 함수가 정의되기 전일 경우 무시 */ }
+                console.log('Applied remote deletedHolidays');
+              } else {
+                console.log('Local deletedHolidays present — skip applying remote defaults');
+              }
+            }
+
+            // systemHolidayOverrides: 로컬에 키가 없을 때만 적용
+            if (settings.systemHolidayOverrides && typeof settings.systemHolidayOverrides === 'object') {
+             if (!localStorage.getItem(STORAGE_KEY_SYSTEM_HOLIDAY_OVERRIDES)) {
+               SYSTEM_HOLIDAY_OVERRIDES = Object.assign({}, settings.systemHolidayOverrides);
+               try { saveSystemHolidayOverridesToStorage(); } catch(e){ }
+               console.log('Applied remote systemHolidayOverrides');
+             } else {
+               console.log('Local systemHolidayOverrides present — skip applying remote defaults');
+             }
+           }
+         } catch (err) {
+           console.warn('Failed to load /holidays.json:', err);
+         }
+       }
+        // UI Elements
+        const calendarDaysEl = document.getElementById('calendarDays');
+        const currentMonthYearEl = document.getElementById('currentMonthYear');
+        const printHeaderEl = document.getElementById('printHeader');
+        const prevMonthBtn = document.getElementById('prevMonth');
+        const nextMonthBtn = document.getElementById('nextMonth');
+        const printBtn = document.getElementById('printBtn');
+        const criteriaBodyEl = document.getElementById('cms-criteria-body');
+        const holidayListEl = document.getElementById('holiday-list');
+        const holidayErrorEl = document.getElementById('holiday-error');
+        const tabButtons = document.querySelectorAll('.tab-button');
+        const tabContents = document.querySelectorAll('.tab-content');
+        const yearSelector = document.getElementById('yearSelector');
+        const monthSelector = document.getElementById('monthSelector');
+        const holidayYearSelector = document.getElementById('holidayYearSelector');
+        const holidayListHeader = document.getElementById('holidayListHeader');
+        const syncStatusEl = document.getElementById('sync-status');
+        const loadingIndicatorEl = document.getElementById('loadingIndicator');
+        const refreshDataBtn = document.getElementById('refreshDataBtn');
+        const exportSettingsBtn = document.getElementById('exportSettingsBtn');
+        const importSettingsBtn = document.getElementById('importSettingsBtn');
+        const importSettingsFile = document.getElementById('importSettingsFile');
+
+        let currentDate = new Date();
+
+        // 시스템 공휴일 캐시
+        let KOREAN_HOLIDAYS = []; // 현재 달력 월의 법정 공휴일 (렌더링 용)
+        let SYSTEM_HOLIDAYS_CACHE = {}; // 연도별 시스템 공휴일 캐시 (YYYY: [holiday objects])
+        const START_YEAR = 2024;
+        const END_YEAR = 2028;
+
+        // --- localStorage 저장/로드 함수 ---
+        
+        /**
+         * DELETED_HOLIDAYS를 localStorage에 저장
+         */
+        function saveDeletedHolidaysToStorage() {
+            try {
+                localStorage.setItem(STORAGE_KEY_DELETED_HOLIDAYS, JSON.stringify(DELETED_HOLIDAYS));
+                console.log('제외된 공휴일 목록이 localStorage에 저장되었습니다.');
+            } catch (error) {
+                console.error('localStorage 저장 오류:', error);
+            }
+        }
+        
+        /**
+         * localStorage에서 DELETED_HOLIDAYS 로드
+         */
+        function loadDeletedHolidaysFromStorage() {
+            try {
+                const stored = localStorage.getItem(STORAGE_KEY_DELETED_HOLIDAYS);
+                if (stored) {
+                    DELETED_HOLIDAYS = JSON.parse(stored);
+                    console.log('제외된 공휴일 목록이 localStorage에서 로드되었습니다:', DELETED_HOLIDAYS);
+                }
+            } catch (error) {
+                console.error('localStorage 로드 오류:', error);
+                DELETED_HOLIDAYS = [];
+            }
+        }
+        
+        /**
+         * 시스템 공휴일 이름 수정 내용을 localStorage에 저장
+         */
+        function saveSystemHolidayOverridesToStorage() {
+            try {
+                localStorage.setItem(STORAGE_KEY_SYSTEM_HOLIDAY_OVERRIDES, JSON.stringify(SYSTEM_HOLIDAY_OVERRIDES));
+                console.log('시스템 공휴일 이름 수정 내용이 localStorage에 저장되었습니다.');
+            } catch (error) {
+                console.error('localStorage 저장 오류 (시스템 공휴일 이름 수정):', error);
+            }
+        }
+        
+        /**
+         * localStorage에서 시스템 공휴일 이름 수정 내용 로드
+         */
+        function loadSystemHolidayOverridesFromStorage() {
+            try {
+                const stored = localStorage.getItem(STORAGE_KEY_SYSTEM_HOLIDAY_OVERRIDES);
+                if (stored) {
+                    SYSTEM_HOLIDAY_OVERRIDES = JSON.parse(stored);
+                    console.log('시스템 공휴일 이름 수정 내용이 localStorage에서 로드되었습니다:', SYSTEM_HOLIDAY_OVERRIDES);
+                }
+            } catch (error) {
+                console.error('localStorage 로드 오류 (시스템 공휴일 이름 수정):', error);
+                SYSTEM_HOLIDAY_OVERRIDES = {};
+            }
+        }
+        
+        /**
+         * 설정을 JSON 파일로 내보내기
+         */
+        function exportSettings() {
+            const settings = {
+                deletedHolidays: DELETED_HOLIDAYS,
+                systemHolidayOverrides: SYSTEM_HOLIDAY_OVERRIDES,
+                exportDate: new Date().toISOString(),
+                version: '1.0'
+            };
+            
+            const dataStr = JSON.stringify(settings, null, 2);
+            const dataBlob = new Blob([dataStr], { type: 'application/json' });
+            const url = URL.createObjectURL(dataBlob);
+            const link = document.createElement('a');
+            link.href = url;
+            link.download = `cms_calendar_settings_${new Date().toISOString().split('T')[0]}.json`;
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+            URL.revokeObjectURL(url);
+            
+            alert('설정이 파일로 내보내졌습니다. 이 파일을 다른 사람과 공유하면 제외된 공휴일 설정을 동일하게 적용할 수 있습니다.');
+        }
+        
+        /**
+         * JSON 파일에서 설정 가져오기
+         */
+        function importSettings(event) {
+            const file = event.target.files[0];
+            if (!file) return;
+            
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                try {
+                    const settings = JSON.parse(e.target.result);
+                    
+                    if (settings.deletedHolidays && Array.isArray(settings.deletedHolidays)) {
+                        const confirmMsg = `가져온 설정에는 ${settings.deletedHolidays.length}개의 제외된 공휴일이 포함되어 있습니다.\n\n` +
+                                        `기존 설정을 덮어쓰시겠습니까?`;
+                        
+                        if (confirm(confirmMsg)) {
+                            DELETED_HOLIDAYS = settings.deletedHolidays;
+                            saveDeletedHolidaysToStorage();
+
+                            // 시스템 공휴일 이름 수정 정보도 가져오기 (있는 경우)
+                            if (settings.systemHolidayOverrides && typeof settings.systemHolidayOverrides === 'object') {
+                                SYSTEM_HOLIDAY_OVERRIDES = settings.systemHolidayOverrides;
+                                saveSystemHolidayOverridesToStorage(); // localStorage에도 저장
+                            }
+                    
+                            renderCalendar();
+                            renderHolidayList();
+                            alert('설정이 성공적으로 가져와졌습니다.');
+                        }
+                    } else {
+                        alert('유효하지 않은 설정 파일입니다.');
+                    }
+                } catch (error) {
+                    console.error('설정 파일 파싱 오류:', error);
+                    alert('설정 파일을 읽는 중 오류가 발생했습니다. 파일 형식을 확인해주세요.');
+                }
+            };
+            reader.readAsText(file);
+            
+            // 파일 입력 초기화 (같은 파일을 다시 선택할 수 있도록)
+            event.target.value = '';
+        }
+
+        // --- holidays.csv 공휴일 데이터 로드 ---
+
+        /**
+         * 날짜 문자열을 "YYYY-MM-DD" 형식으로 정규화
+         * 예: "2026. 01. 01", "2026.01.01", "2026-01-01" 모두 처리
+         */
+        function normalizeDateToISO(dateStr) {
+            if (!dateStr) return null;
+            const raw = String(dateStr).trim();
+            if (!raw) return null;
+
+            // already ISO
+            if (/^\d{4}-\d{2}-\d{2}$/.test(raw)) return raw;
+
+            // common "YYYY. MM. DD"
+            const cleaned = raw.replace(/\s+/g, '');
+            const dotParts = cleaned.split('.');
+            if (dotParts.length === 3 && dotParts.every(p => p.length > 0)) {
+                const year = dotParts[0].padStart(4, '0');
+                const month = dotParts[1].padStart(2, '0');
+                const day = dotParts[2].padStart(2, '0');
+                const iso = `${year}-${month}-${day}`;
+                return /^\d{4}-\d{2}-\d{2}$/.test(iso) ? iso : null;
+            }
+
+            // try Date parsing (Excel exports sometimes yield this)
+            const d = new Date(raw);
+            if (!isNaN(d.getTime())) return formatDate(d);
+
+            return null;
+        }
+
+        /**
+         * CSV 텍스트를 파싱하여 USER_HOLIDAYS 배열로 변환
+         * - 헤더가 있는 경우: date,name 또는 날짜,공휴일명 등을 인식
+         * - 헤더가 없는 경우: 첫 열=날짜, 두번째 이후=이름(쉼표 포함 가능)
+         */
+        function parseHolidayCSV(csvText) {
+            const lines = csvText.split('\n').filter(line => line.trim());
+            const holidays = [];
+            
+            if (lines.length === 0) return holidays;
+
+            const headerParts = lines[0].split(',').map(s => s.trim().replace(/^"|"$/g, ''));
+            const hasHeader = headerParts.some(h => /^(date|날짜)$/i.test(h)) && headerParts.some(h => /^(name|공휴일명|명칭)$/i.test(h));
+            let dateIdx = 0;
+            let nameIdx = 1;
+            if (hasHeader) {
+                dateIdx = headerParts.findIndex(h => /^(date|날짜)$/i.test(h));
+                nameIdx = headerParts.findIndex(h => /^(name|공휴일명|명칭)$/i.test(h));
+            }
+
+            // 헤더 있으면 2번째 줄부터, 없으면 1번째 줄부터
+            const start = hasHeader ? 1 : 0;
+            for (let i = start; i < lines.length; i++) {
+                const line = lines[i].trim();
+                if (!line) continue;
+                
+                // CSV 파싱 (쉼표로 분리)
+                const parts = line.split(',').map(p => p.trim());
+                const dateStr = parts[dateIdx] ?? parts[0];
+                const name = hasHeader
+                  ? (parts[nameIdx] ?? '').trim()
+                  : parts.slice(1).join(',').trim(); // 공휴일명에 쉼표가 있을 수 있음
+                    
+                const isoDate = normalizeDateToISO(dateStr);
+                if (isoDate && name) {
+                    holidays.push({
+                        date: isoDate,
+                        name: name,
+                        isSystem: false // 사용자 정의 공휴일
+                    });
+                }
+            }
+            
+            return holidays;
+        }
+
+        function setHolidaySyncStatusOk(message) {
+            syncStatusEl.textContent = message;
+            loadingIndicatorEl.classList.remove('bg-indigo-50', 'bg-red-100', 'bg-yellow-100');
+            loadingIndicatorEl.classList.add('bg-green-100');
+        }
+
+        function setHolidaySyncStatusLoading(message) {
+            syncStatusEl.textContent = message;
+            loadingIndicatorEl.classList.remove('bg-green-100', 'bg-red-100', 'bg-yellow-100');
+            loadingIndicatorEl.classList.add('bg-indigo-50');
+        }
+
+        function setHolidaySyncStatusError(message) {
+            syncStatusEl.textContent = message;
+            loadingIndicatorEl.classList.remove('bg-green-100', 'bg-indigo-50', 'bg-yellow-100');
+            loadingIndicatorEl.classList.add('bg-red-100');
+        }
+
+        /**
+         * 같은 경로의 holidays.csv에서 공휴일 로드
+         */
+        async function loadHolidaysCsvFromServer() {
+            try {
+                setHolidaySyncStatusLoading('holidays.csv 로드 중...');
+
+                const resp = await fetch('holidays.csv', { method: 'GET', cache: 'no-cache' });
+                if (!resp.ok) throw new Error(`holidays.csv 로드 실패 (HTTP ${resp.status})`);
+                const text = await resp.text();
+                const parsedHolidays = parseHolidayCSV(text);
+
+                // 중복 날짜는 마지막 값으로 덮어쓰기
+                const byDate = new Map();
+                parsedHolidays.forEach(h => { byDate.set(h.date, { date: h.date, name: h.name, isSystem: false }); });
+                USER_HOLIDAYS = Array.from(byDate.values()).sort((a, b) => a.date.localeCompare(b.date));
+
+                renderCalendar();
+                if (document.getElementById('holiday').classList.contains('hidden') === false) renderHolidayList();
+
+                setHolidaySyncStatusOk(`✅ holidays.csv 로드됨 (${USER_HOLIDAYS.length}개)`);
+            } catch (error) {
+                console.error('holidays.csv 로드 오류:', error);
+                setHolidaySyncStatusError(`❗ holidays.csv 로드 오류: ${error.message}`);
+            }
+        }
+        
+        // --- 대한민국 법정 공휴일 및 대체공휴일 계산 로직 (정적) ---
+
+        // 참고: 음력 날짜 계산을 위해 2024년 ~ 2028년의 설날/추석 (연휴 시작일) 양력 날짜를 사용
+        const LUNAR_HOLIDAYS_MAP = {
+            // [양력 날짜]: [공휴일명, 연휴 일수]
+            2024: { 
+                '02-09': { name: '설날 연휴', days: 3, actualDay: '2024-02-10' }, 
+                '09-16': { name: '추석 연휴', days: 3, actualDay: '2024-09-17' }
+            },
+            2025: { 
+                '01-28': { name: '설날 연휴', days: 3, actualDay: '2025-01-29' }, 
+                '10-06': { name: '추석 연휴', days: 3, actualDay: '2025-10-07' }
+            },
+            2026: { 
+                '02-16': { name: '설날 연휴', days: 3, actualDay: '2026-02-17' }, 
+                '09-25': { name: '추석 연휴', days: 3, actualDay: '2026-09-26' }
+            },
+            2027: {
+                '02-06': { name: '설날 연휴', days: 3, actualDay: '2027-02-07' },
+                '09-14': { name: '추석 연휴', days: 3, actualDay: '2027-09-15' }
+            },
+            2028: {
+                '01-25': { name: '설날 연휴', days: 3, actualDay: '2028-01-26' },
+                '10-02': { name: '추석 연휴', days: 3, actualDay: '2028-10-03' }
+            }
+        };
+        
+        // 부처님 오신 날 (석가탄신일) 양력 날짜 (음력 4월 8일)
+        const BUDDHA_BIRTHDAY_MAP = {
+            2024: '2024-05-15', 2025: '2025-05-24', 2026: '2026-05-13',
+            2027: '2027-05-03', 2028: '2028-05-22'
+        };
+
+
+        /** * 주어진 연도의 대한민국 법정 공휴일 목록 (대체공휴일 포함)을 계산합니다.
+         */
+        function calculateKoreanHolidays(year) {
+            let holidays = [];
+
+            // Helper: 날짜 추가
+            const addHoliday = (dateStr, name, isLunar=false) => {
+                if (!/^\d{4}-\d{2}-\d{2}$/.test(dateStr)) return;
+
+                holidays.push({ 
+                    date: dateStr, 
+                    name: name, 
+                    isHoliday: true, 
+                    isLunar: isLunar,
+                    isSubstitute: false,
+                    isSystem: true // 시스템에서 계산된 공휴일임을 표시
+                });
+            };
+            
+            // Helper: 날짜 문자열에서 요일 가져오기 (0:일, 6:토)
+            const getDayOfWeek = (dateStr) => new Date(dateStr).getDay();
+
+            // 1. 태양력 공휴일
+            addHoliday(`${year}-01-01`, '신정');
+            addHoliday(`${year}-03-01`, '삼일절');
+            addHoliday(`${year}-05-05`, '어린이날'); 
+            addHoliday(`${year}-06-06`, '현충일');
+            addHoliday(`${year}-08-15`, '광복절');
+            addHoliday(`${year}-10-03`, '개천절');
+            addHoliday(`${year}-10-09`, '한글날');
+            addHoliday(`${year}-12-25`, '성탄절');
+
+            // 부처님 오신 날 (석가탄신일)
+            if (BUDDHA_BIRTHDAY_MAP[year]) {
+                addHoliday(BUDDHA_BIRTHDAY_MAP[year], '부처님 오신 날', true);
+            }
+
+            // 2. 음력 공휴일 (설날, 추석)
+            const lunar = LUNAR_HOLIDAYS_MAP[year];
+            if (lunar) {
+                // 설날 연휴 (연휴 시작일 기준, 3일)
+                const lunarNewYear = lunar[Object.keys(lunar)[0]]; 
+                const baseDateStr_S = lunarNewYear ? lunarNewYear.actualDay : null;
+                if (baseDateStr_S) { 
+                    const baseDate = new Date(baseDateStr_S);
+                    for (let i = -1; i <= 1; i++) {
+                        const date = new Date(baseDate.getTime());
+                        date.setDate(date.getDate() + i);
+                        const dateStr = formatDate(date);
+                        const name = i === 0 ? '설날' : (i === -1 ? '설날 연휴(전날)' : '설날 연휴(다음날)');
+                        addHoliday(dateStr, name, true);
+                    }
+                }
+
+                // 추석 연휴 (연휴 시작일 기준, 3일)
+                const chuseok = lunar[Object.keys(lunar)[1]];
+                const baseDateStr_C = chuseok ? chuseok.actualDay : null;
+                if (baseDateStr_C) {
+                    const baseDate = new Date(baseDateStr_C);
+                    for (let i = -1; i <= 1; i++) { // 추석 전날, 당일, 다음날
+                        const date = new Date(baseDate.getTime());
+                        date.setDate(date.getDate() + i);
+                        const dateStr = formatDate(date);
+                        const name = i === 0 ? '추석' : (i === -1 ? '추석 연휴(전날)' : '추석 연휴(다음날)');
+                        addHoliday(dateStr, name, true);
+                    }
+                }
+            }
+
+            // 공휴일 목록의 날짜만 추출하여 Set 생성 (중복 처리 및 검색 최적화)
+            let isHolidaySet = new Set(holidays.map(h => h.date));
+            
+            // --- 대체 공휴일 계산을 위한 도우미 함수 ---
+            const isNonWorkingDayForSubstitution = (dateStr) => {
+                const d = new Date(dateStr);
+                const dayOfWeek = d.getDay(); // 0:일, 6:토
+                // 대체공휴일 지정 기준: 일요일 또는 다른 공휴일과 겹치는 경우
+                return dayOfWeek === 0 || isHolidaySet.has(dateStr); 
+            }
+
+            const findNextWorkingDay = (dateStr) => {
+                let nextDay = new Date(dateStr);
+                nextDay.setDate(nextDay.getDate() + 1);
+                // 주말(일요일/토요일) 또는 다른 공휴일이 아닐 때까지
+                while (isNonWorkingDayForSubstitution(formatDate(nextDay)) || new Date(formatDate(nextDay)).getDay() === 6) {
+                    nextDay.setDate(nextDay.getDate() + 1);
+                }
+                return formatDate(nextDay);
+            }
+            
+            // --- 3. 대체 공휴일 계산 (Substitute Holidays) ---
+
+            const standardHolidays = [
+                { date: `${year}-05-05`, name: '어린이날' },
+                { date: `${year}-03-01`, name: '삼일절' },
+                { date: `${year}-08-15`, name: '광복절' },
+                { date: `${year}-10-03`, name: '개천절' },
+                { date: `${year}-10-09`, name: '한글날' },
+                { date: BUDDHA_BIRTHDAY_MAP[year], name: '부처님 오신 날' }
+            ].filter(h => h.date && isHolidaySet.has(h.date));
+
+            standardHolidays.forEach(h => {
+                const dayOfWeek = getDayOfWeek(h.date);
+                
+                // 어린이날은 토요일, 일요일 모두 대체공휴일 지정 대상 (다른 공휴일과 겹칠 때도)
+                if (h.name === '어린이날') {
+                    if (dayOfWeek === 0 || dayOfWeek === 6 || holidays.filter(hd => hd.date === h.date).length > 1) {
+                        const subDateStr = findNextWorkingDay(h.date);
+                        if (!isHolidaySet.has(subDateStr)) {
+                            holidays.push({ date: subDateStr, name: '대체공휴일 (어린이날)', isHoliday: true, isSubstitute: true, isSystem: true });
+                            isHolidaySet.add(subDateStr);
+                        }
+                    }
+                } 
+                // 부처님 오신 날은 일요일만 대체공휴일 지정 대상 (토요일 미포함)
+                else if (h.name === '부처님 오신 날') {
+                    if (dayOfWeek === 0 || holidays.filter(hd => hd.date === h.date).length > 1) {
+                        const subDateStr = findNextWorkingDay(h.date);
+                        if (!isHolidaySet.has(subDateStr)) {
+                            holidays.push({ date: subDateStr, name: '대체공휴일 (부처님 오신 날)', isHoliday: true, isSubstitute: true, isSystem: true });
+                            isHolidaySet.add(subDateStr);
+                        }
+                    }
+                }
+                // 기타 일반 공휴일: 일요일 또는 다른 공휴일과 겹칠 때 대체공휴일 지정
+                else {
+                    if (dayOfWeek === 0 || holidays.filter(hd => hd.date === h.date).length > 1) {
+                        const subDateStr = findNextWorkingDay(h.date);
+                        if (!isHolidaySet.has(subDateStr)) {
+                            holidays.push({ date: subDateStr, name: `대체공휴일 (${h.name})`, isHoliday: true, isSubstitute: true, isSystem: true });
+                            isHolidaySet.add(subDateStr);
+                        }
+                    }
+                }
+            });
+
+            // B. 설날/추석 대체 공휴일 규칙 (연휴 기간 내에 '일요일' 또는 '다른 공휴일' 포함 시)
+            const checkSubstitute = (baseDateStr, holidayName) => {
+                if (baseDateStr) {
+                    const baseDate = new Date(baseDateStr);
+                    // 설날: 연휴 기간 (전날, 당일, 다음날)에 일요일이 포함된 경우
+                    // 추석: 연휴 기간 (전날, 당일, 다음날)에 일요일이 포함된 경우
+                    let hasSundayInHolidayPeriod = false;
+                    for (let i = -1; i <= 1; i++) {
+                        const checkDate = new Date(baseDate.getTime());
+                        checkDate.setDate(checkDate.getDate() + i);
+                        if (checkDate.getDay() === 0) { // 일요일인 경우
+                            hasSundayInHolidayPeriod = true;
+                            break;
+                        }
+                    }
+
+                    if (hasSundayInHolidayPeriod) {
+                        let substituteDate = new Date(baseDate.getTime());
+                        substituteDate.setDate(substituteDate.getDate() + 2); // 연휴 다음날
+                        
+                        // 그 다음 영업일을 찾음
+                        while (isNonWorkingDayForSubstitution(formatDate(substituteDate)) || new Date(formatDate(substituteDate)).getDay() === 6) {
+                            substituteDate.setDate(substituteDate.getDate() + 1);
+                        }
+                        const subDateStr = formatDate(substituteDate);
+                        
+                        if (!isHolidaySet.has(subDateStr)) {
+                            holidays.push({ date: subDateStr, name: `대체공휴일 (${holidayName})`, isHoliday: true, isSubstitute: true, isSystem: true });
+                            isHolidaySet.add(subDateStr);
+                        }
+                    }
+                }
+            };
+            
+            if (lunar) {
+                const lunarNewYear = lunar[Object.keys(lunar)[0]]; 
+                const chuseok = lunar[Object.keys(lunar)[1]];
+                
+                checkSubstitute(lunarNewYear?.actualDay, '설날');
+                checkSubstitute(chuseok?.actualDay, '추석');
+            }
+            
+            return holidays;
+        }
+
+        // --- 시스템 공휴일 캐싱 및 초기화 ---
+        function cacheSystemHolidays() {
+            for (let year = START_YEAR; year <= END_YEAR; year++) {
+                SYSTEM_HOLIDAYS_CACHE[year] = calculateKoreanHolidays(year);
+            }
+        }
+        // 캐시 초기화
+        cacheSystemHolidays(); 
+
+
+        // --- Mock Data and Constant Definition ---
+        const CMS_CRITERIA_ALL = [
+            { stage: '출금신청/동의', code: 'EB13/EI13', date: '1,11,16,21일', task: 'UBMS→금결원 오전 10시', deadline: '파일 수신 익 영업일 오후 12시', holiday: '다음 영업일', type: 'send', colorClass: 'color-group-send', baseCode: null, delayDays: 0 },
+            { stage: '출금의뢰', code: 'EB21', date: '4,14,19,24일', task: 'UBMS→금결원 오후 1시', deadline: '파일 수신 당일 오후 5시', holiday: '이전 영업일', type: 'send', colorClass: 'color-group-send', baseCode: null, delayDays: 0 },
+            
+            { stage: '출금신청 결과', code: 'EB14', date: 'EB13/EI13파일 송신 +2영업일', task: '금결원→UBMS 오후 1시', deadline: '파일 수신 당일 오후 5시', holiday: '-', type: 'receive', colorClass: 'color-group-receive', baseCode: 'EB13/EI13', delayDays: 2 },
+            { stage: '출금의뢰 결과', code: 'EB22', date: 'EB21파일 송신 +2영업일', task: '금결원→UBMS 오전 9시', deadline: '파일 수신 당일 오후 12시', holiday: '-', type: 'receive', colorClass: 'color-group-receive', baseCode: 'EB21', delayDays: 2 },
+            { stage: '입금의뢰', code: 'EB31', date: 'EB21파일 송신 +2영업일', task: 'UBMS→금결원 오후 12시', deadline: '파일 수신 익 영업일 오후 2시', holiday: '-', type: 'send', colorClass: 'color-group-send', baseCode: 'EB21', delayDays: 2 },
+            { stage: '입금의뢰 결과', code: 'EB32', date: 'EB31파일 송신 +2영업일', task: '금결원→UBMS 오후 1시', deadline: '파일 수신 당일 오후 5시', holiday: '-', type: 'receive', colorClass: 'color-group-receive', baseCode: 'EB31', delayDays: 2 },
+            
+            { stage: '출금(실제 출금일)', code: '-', date: '5,15,20,25일', task: '-', deadline: '-', holiday: '다음 영업일', type: 'excluded', colorClass: 'bg-gray-400', baseCode: null, delayDays: 0 },
+            { stage: '입금(실제 입금일)', code: '-', date: '출금일 +3영업일', task: '-', deadline: '-', holiday: '-', type: 'excluded', colorClass: 'bg-gray-400', baseCode: null, delayDays: 0 }, 
+        ];
+
+
+        // --- Utility Functions (Date and Working Day Calculation) ---
+
+        /** 날짜 객체를 'YYYY-MM-DD' 형식의 문자열로 변환합니다. */
+        function formatDate(date) {
+            const y = date.getFullYear();
+            const m = String(date.getMonth() + 1).padStart(2, '0');
+            const d = String(date.getDate()).padStart(2, '0');
+            return `${y}-${m}-${d}`;
+        }
+
+        /** * 해당 날짜가 주말 또는 공휴일인지 확인합니다. 
+         * @param {Date|string} date - 확인할 날짜 객체 또는 문자열
+         */
+        function isNonWorkingDay(date) {
+            const d = date instanceof Date ? date : new Date(date);
+            const dayOfWeek = d.getDay(); // 0:일, 6:토
+            const dateStr = formatDate(d);
+            
+            // 1. DELETED_HOLIDAYS에 포함되면, 공휴일로 처리하지 않고 주말만 체크
+            // (이 경우, DELETED_HOLIDAYS에 있어도 주말은 여전히 휴무일)
+            const isExcluded = DELETED_HOLIDAYS.includes(dateStr);
+            if (isExcluded) {
+                return dayOfWeek === 0 || dayOfWeek === 6; 
+            }
+
+            // 2. 주말 체크
+            if (dayOfWeek === 0 || dayOfWeek === 6) return true;
+
+            // 3. 법정 공휴일 (SYSTEM_HOLIDAYS_CACHE) + 사용자 정의 공휴일 (USER_HOLIDAYS) 확인
+            const checkHoliday = (str) => {
+                const year = d.getFullYear();
+                
+                // 시스템 공휴일 체크 (캐시 사용)
+                const systemHolidays = SYSTEM_HOLIDAYS_CACHE[year] || [];
+                if (systemHolidays.some(h => h.date === str)) return true;
+                
+                // 사용자 정의 공휴일 체크
+                if (USER_HOLIDAYS.some(h => h.date === str)) return true;
+
+                return false;
+            }
+
+            return checkHoliday(dateStr);
+        }
+        
+        /** 다음 영업일을 찾습니다. */
+        function getNextWorkingDay(date) {
+            const d = new Date(date);
+            d.setDate(d.getDate() + 1);
+            while (isNonWorkingDay(d)) {
+                d.setDate(d.getDate() + 1);
+            }
+            return d;
+        }
+
+        /** 이전 영업일을 찾습니다. */
+        function getPrevWorkingDay(date) {
+            const d = new Date(date);
+            d.setDate(d.getDate() - 1);
+            while (isNonWorkingDay(d)) {
+                d.setDate(d.getDate() - 1);
+            }
+            return d;
+        }
+
+        /** 기준 날짜로부터 N 영업일 후의 날짜를 계산합니다. */
+        function addWorkingDays(date, days) {
+            const d = new Date(date);
+            for (let i = 0; i < days; i++) {
+                d.setDate(d.getDate() + 1);
+                // 영업일을 찾을 때까지 반복
+                while (isNonWorkingDay(d)) {
+                    d.setDate(d.getDate() + 1);
+                }
+            }
+            return d;
+        }
+
+
+        // --- Selector Management Functions ---
+        
+        function populateSelectors() {
+            const currentYear = new Date().getFullYear();
+            
+            // Year Selector (Calendar)
+            yearSelector.innerHTML = '';
+            for (let y = currentYear - 2; y <= currentYear + 3; y++) {
+                const option = document.createElement('option');
+                option.value = y;
+                option.textContent = y;
+                yearSelector.appendChild(option);
+            }
+
+            // Month Selector (Calendar)
+            monthSelector.innerHTML = '';
+            for (let m = 1; m <= 12; m++) {
+                const option = document.createElement('option');
+                option.value = m;
+                option.textContent = m;
+                monthSelector.appendChild(option);
+            }
+            
+            // Holiday Year Selector
+            holidayYearSelector.innerHTML = '';
+            for (let y = START_YEAR; y <= END_YEAR; y++) {
+                const option = document.createElement('option');
+                option.value = y;
+                option.textContent = y;
+                holidayYearSelector.appendChild(option);
+            }
+
+            yearSelector.addEventListener('change', jumpToDate);
+            monthSelector.addEventListener('change', jumpToDate);
+            holidayYearSelector.addEventListener('change', renderHolidayList);
+        }
+
+        function updateSelectors() {
+            yearSelector.value = currentDate.getFullYear();
+            monthSelector.value = currentDate.getMonth() + 1;
+        }
+
+        function jumpToDate() {
+            const year = parseInt(yearSelector.value);
+            const month = parseInt(monthSelector.value) - 1; // month is 0-indexed
+            currentDate = new Date(year, month, 1);
+            renderCalendar();
+        }
+
+
+        // --- CMS Criteria Table Functions ---
+        function renderCriteriaTable() {
+            criteriaBodyEl.innerHTML = CMS_CRITERIA_ALL.map(item => `
+                <tr class="hover:bg-gray-50 ${item.type === 'excluded' ? 'bg-gray-100 text-gray-500' : ''}">
+                    <td class="px-3 py-2 whitespace-nowrap text-xs font-medium text-gray-800">${item.stage}</td>
+                    <td class="px-3 py-2 whitespace-nowrap text-xs ${item.type !== 'excluded' ? 'text-indigo-600 font-semibold' : ''}">${item.code}</td>
+                    <td class="px-3 py-2 whitespace-nowrap text-xs text-gray-700">${item.date}</td>
+                    <td class="px-3 py-2 text-xs text-gray-700">${item.task}</td>
+                    <td class="px-3 py-2 text-xs text-gray-700">${item.deadline}</td>
+                    <td class="px-3 py-2 whitespace-nowrap text-xs ${item.holiday !== '-' ? 'text-red-500' : 'text-gray-700'}">${item.holiday}</td>
+                </tr>
+            `).join('');
+        }
+
+
+        // --- Holiday Management Functions (Firestore Interaction) ---
+        
+        // 현재 활성화된 공휴일 목록을 반환 (시스템 + 사용자 - 삭제 목록)
+        function getAllHolidaysForYear(year) {
+            const yearStr = String(year);
+            
+            // 1. 시스템 공휴일 (캐시에서 가져옴)
+            const systemHolidays = SYSTEM_HOLIDAYS_CACHE[year] || [];
+            
+            // 2. 사용자 정의 공휴일 (해당 연도의 것만 필터링)
+            const userHolidays = USER_HOLIDAYS.filter(h => h.date.startsWith(yearStr));
+
+            // 3. 두 목록을 합치고, 날짜를 기준으로 중복 제거
+            let ALL = [...systemHolidays, ...userHolidays];
+            const uniqueHolidays = ALL.filter((holiday, index, self) =>
+                index === self.findIndex((h) => h.date === holiday.date)
+            );
+            
+            // 4. 삭제된 공휴일 목록 필터링
+            let activeHolidays = uniqueHolidays.filter(holiday =>
+                !DELETED_HOLIDAYS.includes(holiday.date)
+            );
+            
+            // 5. 시스템 공휴일 이름 수정 적용
+            activeHolidays = activeHolidays.map(h => {
+                const overrideName = h.isSystem ? SYSTEM_HOLIDAY_OVERRIDES[h.date] : null;
+                if (overrideName) {
+                    return { ...h, name: overrideName, isOverride: true };
+                }
+                return h;
+            });
+            
+            return activeHolidays.sort((a, b) => a.date.localeCompare(b.date));
+        }
+
+        // 공휴일 목록 UI 렌더링 (시스템 공휴일 + 사용자 정의 공휴일 모두 표시)
+        function renderHolidayList() {
+            const selectedYear = holidayYearSelector.value;
+            if (!selectedYear) return;
+
+            // 전체 활성 공휴일 목록 가져오기 (시스템 + 사용자)
+            const allActiveHolidays = getAllHolidaysForYear(selectedYear);
+            
+            // 사용자 정의 공휴일과 시스템 공휴일 분리
+            const userHolidays = allActiveHolidays.filter(h => !h.isSystem);
+            const systemHolidays = allActiveHolidays.filter(h => h.isSystem);
+            
+            // 삭제된 공휴일 목록 (시스템 + 사용자 모두 포함)
+            const allDeletedHolidays = DELETED_HOLIDAYS
+                .filter(date => date.startsWith(selectedYear))
+                .map(date => {
+                    // 시스템 공휴일인지 확인
+                    const year = parseInt(selectedYear);
+                    const systemHoliday = SYSTEM_HOLIDAYS_CACHE[year]?.find(h => h.date === date);
+                    if (systemHoliday) {
+                        return { 
+                            date, 
+                            name: systemHoliday.name, 
+                            isDeleted: true, 
+                            isSystem: true 
+                        };
+                    }
+                    
+                    // 사용자 정의 공휴일인지 확인
+                    const originalUserHoliday = USER_HOLIDAYS.find(h => h.date === date);
+                    if (originalUserHoliday) {
+                        return { 
+                            date, 
+                            name: originalUserHoliday.name, 
+                            isDeleted: true, 
+                            isSystem: false 
+                        };
+                    }
+                    
+                    return null;
+                })
+                .filter(h => h !== null) // null 제거
+                .sort((a, b) => a.date.localeCompare(b.date));
+
+            holidayListHeader.textContent = `${selectedYear}년 전체 공휴일 목록 및 관리`;
+
+            if (allActiveHolidays.length === 0 && allDeletedHolidays.length === 0) {
+                holidayListEl.innerHTML = '<li class="text-gray-500 italic">해당 연도에 등록된 공휴일이 없습니다.</li>';
+                return;
+            }
+
+            let html = '';
+
+            // 1. 활성 공휴일 목록 (시스템 + 사용자)
+            if (allActiveHolidays.length > 0) {
+                html += `<h5 class="text-base font-semibold text-gray-700 mt-4 mb-2">활성 공휴일 (${allActiveHolidays.length}개)</h5>`;
+                
+                // 시스템 공휴일 표시
+                if (systemHolidays.length > 0) {
+                    html += systemHolidays.map((holiday) => {
+                        const type = '시스템';
+                        const typeClass = 'text-blue-500';
+                        const deleteBtnText = '제외';
+
+                        return `
+                            <li class="flex justify-between items-center bg-white p-3 rounded-lg border shadow-sm text-sm">
+                                <span class="font-semibold text-gray-800">${holiday.date}</span>
+                                <span class="text-gray-600 ml-4">${holiday.name}${holiday.isSubstitute ? ' (대체)' : ''}</span>
+                                <span class="text-xs font-medium ${typeClass} bg-gray-100 px-2 py-1 rounded-full ml-auto mr-3">${type}</span>
+                                <div class="flex gap-2">
+                                    <button data-date="${holiday.date}" data-system="true" class="edit-holiday-btn text-blue-500 hover:text-blue-700 font-medium transition duration-150">
+                                        이름 수정
+                                    </button>
+                                    <button data-date="${holiday.date}" data-system="true" class="delete-holiday-btn text-red-500 hover:text-red-700 font-medium transition duration-150">
+                                        ${deleteBtnText}
+                                    </button>
+                                </div>
+                            </li>
+                        `;
+                    }).join('');
+                }
+                
+                // 사용자 정의 공휴일 표시
+                if (userHolidays.length > 0) {
+                    html += userHolidays.map((holiday) => {
+                        const type = '사용자';
+                        const typeClass = 'text-green-500';
+                        const deleteBtnText = '제외';
+
+                        return `
+                            <li class="flex justify-between items-center bg-white p-3 rounded-lg border shadow-sm text-sm">
+                                <span class="font-semibold text-gray-800">${holiday.date}</span>
+                                <span class="text-gray-600 ml-4">${holiday.name}</span>
+                                <span class="text-xs font-medium ${typeClass} bg-gray-100 px-2 py-1 rounded-full ml-auto mr-3">${type}</span>
+                                <div class="flex gap-2">
+                                    <button data-date="${holiday.date}" data-system="false" class="delete-holiday-btn text-red-500 hover:text-red-700 font-medium transition duration-150">
+                                        ${deleteBtnText}
+                                    </button>
+                                </div>
+                            </li>
+                        `;
+                    }).join('');
+                }
+            }
+
+            // 2. 삭제/제외된 공휴일 목록 (복구 가능)
+            if (allDeletedHolidays.length > 0) {
+                html += `<h5 class="text-base font-semibold text-gray-700 mt-8 mb-2 border-t pt-4">삭제/제외된 공휴일 (${allDeletedHolidays.length}개)</h5>`;
+                html += allDeletedHolidays.map((holiday) => {
+                    const typeLabel = holiday.isSystem ? '제외됨 (시스템)' : '제외됨 (사용자)';
+                    return `
+                        <li class="flex justify-between items-center bg-gray-100 p-3 rounded-lg border border-dashed text-sm line-through text-gray-500">
+                            <span class="font-semibold">${holiday.date}</span>
+                            <span class="ml-4">${holiday.name}</span>
+                            <span class="text-xs font-medium text-gray-400 bg-white px-2 py-1 rounded-full ml-auto mr-3">${typeLabel}</span>
+                            <button data-date="${holiday.date}" class="restore-holiday-btn text-indigo-500 hover:text-indigo-700 font-medium transition duration-150 ml-3 no-underline">
+                                복구
+                            </button>
+                        </li>
+                    `;
+                }).join('');
+            }
+
+            holidayListEl.innerHTML = html;
+
+            document.querySelectorAll('.delete-holiday-btn').forEach(button => {
+                button.addEventListener('click', deleteHoliday);
+            });
+            document.querySelectorAll('.restore-holiday-btn').forEach(button => {
+                button.addEventListener('click', restoreHoliday);
+            });
+            document.querySelectorAll('.edit-holiday-btn').forEach(button => {
+                button.addEventListener('click', editHoliday);
+            });
+        }
+
+        // 공휴일 삭제/제외 (시스템=제외, 사용자=완전 삭제)
+        function deleteHoliday(event) {
+            const dateToDelete = event.currentTarget.dataset.date;
+            const isSystem = event.currentTarget.dataset.system === 'true';
+
+            // 시스템/사용자 모두: 달력에서 제외(로컬 설정)
+            if (!DELETED_HOLIDAYS.includes(dateToDelete)) {
+                DELETED_HOLIDAYS.push(dateToDelete);
+                saveDeletedHolidaysToStorage();
+            }
+            renderCalendar();
+            renderHolidayList();
+        }
+
+        // 공휴일 복구 (DELETED_HOLIDAYS에서 제거)
+        function restoreHoliday(event) {
+            const dateToRestore = event.currentTarget.dataset.date;
+            
+            // DELETED_HOLIDAYS 목록에서 제거
+            DELETED_HOLIDAYS = DELETED_HOLIDAYS.filter(d => d !== dateToRestore);
+            saveDeletedHolidaysToStorage(); // localStorage에 저장
+            
+            // UI 즉시 갱신 (달력과 공휴일 목록)
+            renderCalendar();
+            renderHolidayList();
+        }
+        
+            // 공휴일 수정 (시스템/사용자 모두)
+        function editHoliday(event) {
+            const dateToEdit = event.currentTarget.dataset.date;
+            const isSystem = event.currentTarget.dataset.system === 'true';
+            
+            if (isSystem) {
+                // 시스템 공휴일 이름 로컬 수정
+                // 현재 이름 찾기: 시스템 공휴일 캐시 또는 override 반영
+                const year = parseInt(dateToEdit.substring(0, 4), 10);
+                const systemHoliday = (SYSTEM_HOLIDAYS_CACHE[year] || []).find(h => h.date === dateToEdit);
+                const currentName = SYSTEM_HOLIDAY_OVERRIDES[dateToEdit] || (systemHoliday ? systemHoliday.name : '');
+                
+                if (!systemHoliday && !currentName) {
+                    alert('수정할 시스템 공휴일을 찾을 수 없습니다.');
+                    return;
+                }
+                
+                const newName = prompt(`시스템 공휴일명을 수정하세요 (로컬 표시 전용):\n날짜: ${dateToEdit}\n현재 이름: ${currentName || (systemHoliday ? systemHoliday.name : '')}`, currentName || (systemHoliday ? systemHoliday.name : ''));
+                
+                if (newName && newName.trim()) {
+                    SYSTEM_HOLIDAY_OVERRIDES[dateToEdit] = newName.trim();
+                    saveSystemHolidayOverridesToStorage();
+                    renderCalendar();
+                    renderHolidayList();
+                }
+            } else {
+                alert('사용자 공휴일은 `holidays.csv`에서 수정해주세요.');
+            }
+        }
+
+        // --- Calendar Core Logic (데이터는 Firestore에서 동기화됨) ---
+
+        function calculateMonthlyTasks(year, month) {
+            const tasksByDate = {};
+            const baseTaskDates = {}; 
+
+            const daysInMonth = new Date(year, month + 1, 0).getDate();
+            const firstDayOfMonth = new Date(year, month, 1).getDay();
+            const lastDateOfPrevMonth = new Date(year, month, 0).getDate();
+            
+            // 달력에 표시되는 날짜 범위 계산 (이전 달 끝부분 + 현재 달 + 다음 달 시작부분)
+            const prevMonthStart = lastDateOfPrevMonth - firstDayOfMonth + 1;
+            const prevMonthYear = month === 0 ? year - 1 : year;
+            const prevMonth = month === 0 ? 11 : month - 1;
+            
+            // 다음 달의 시작 날짜들도 포함 (42개 셀 중 남은 부분)
+            const totalDisplayCells = 42;
+            const nextMonthDays = totalDisplayCells - firstDayOfMonth - daysInMonth;
+            
+            // 전체 활성 공휴일 목록 (달력 렌더링에 사용)
+            // 현재 월의 공휴일만 필터링하여 사용
+            const ALL_ACTIVE_HOLIDAYS = getAllHolidaysForYear(year).filter(h => {
+                const hMonth = parseInt(h.date.substring(5, 7));
+                return hMonth === (month + 1);
+            });
+
+            const holidayMap = new Map(ALL_ACTIVE_HOLIDAYS.map(h => [h.date, h]));
+            
+            // 이전 달의 base tasks도 계산 (현재 달에 영향을 미칠 수 있음)
+            const prevMonthDaysInMonth = new Date(prevMonthYear, prevMonth + 1, 0).getDate();
+            
+            // 1. Base Tasks (EB13/EI13, EB21) 날짜 계산 및 적용 (휴일 처리 포함)
+            const baseCriteria = CMS_CRITERIA_ALL.filter(c => c.type !== 'excluded' && c.baseCode === null);
+            
+            // 현재 달의 base tasks 계산
+            
+            baseCriteria.forEach(criteria => {
+                const dateNumbers = criteria.date.split('일')[0].split(',').map(n => parseInt(n.trim())).filter(n => !isNaN(n));
+                baseTaskDates[criteria.code] = [];
+                
+                dateNumbers.forEach(day => {
+                    if (day < 1 || day > daysInMonth) return; 
+
+                    let targetDate = new Date(year, month, day);
+                    
+                    // 공휴일 처리 규칙 적용
+                    if (isNonWorkingDay(targetDate)) {
+                        if (criteria.holiday === '다음 영업일') {
+                            targetDate = getNextWorkingDay(targetDate);
+                        } else if (criteria.holiday === '이전 영업일') {
+                            targetDate = getPrevWorkingDay(targetDate);
+                        }
+                    }
+
+                    const dateStr = formatDate(targetDate);
+                    
+                    // 현재 달력 월에 속하는 날짜만 처리 (휴일 처리로 인해 다른 달로 이동했을 수 있음)
+                    if (targetDate.getFullYear() !== year || targetDate.getMonth() !== month) return;
+
+                    // 중복 방지 및 날짜 저장
+                    if (!baseTaskDates[criteria.code].some(d => formatDate(d) === dateStr)) {
+                        baseTaskDates[criteria.code].push(targetDate);
+
+                        const task = {
+                            stage: criteria.stage,
+                            code: criteria.code,
+                            task: criteria.task, 
+                            colorClass: criteria.colorClass
+                        };
+                        tasksByDate[dateStr] = tasksByDate[dateStr] || [];
+                        if (!tasksByDate[dateStr].some(t => t.code === task.code)) {
+                            tasksByDate[dateStr].push(task);
+                        }
+                    }
+                });
+            });
+
+
+            // 이전 달의 base tasks 계산 (현재 달에 영향을 미칠 수 있음)
+            const prevMonthBaseTaskDates = {};
+            baseCriteria.forEach(criteria => {
+                const dateNumbers = criteria.date.split('일')[0].split(',').map(n => parseInt(n.trim())).filter(n => !isNaN(n));
+                prevMonthBaseTaskDates[criteria.code] = [];
+                
+                dateNumbers.forEach(day => {
+                    if (day < 1 || day > prevMonthDaysInMonth) return;
+                    
+                    let targetDate = new Date(prevMonthYear, prevMonth, day);
+                    
+                    // 공휴일 처리 규칙 적용
+                    if (isNonWorkingDay(targetDate)) {
+                        if (criteria.holiday === '다음 영업일') {
+                            targetDate = getNextWorkingDay(targetDate);
+                        } else if (criteria.holiday === '이전 영업일') {
+                            targetDate = getPrevWorkingDay(targetDate);
+                        }
+                    }
+                    
+                    const dateStr = formatDate(targetDate);
+                    
+                    // 이전 달의 날짜만 저장 (공휴일 처리로 인해 다른 달로 이동했을 수 있음)
+                    if (targetDate.getFullYear() !== prevMonthYear || targetDate.getMonth() !== prevMonth) return;
+                    
+                    if (!prevMonthBaseTaskDates[criteria.code].some(d => formatDate(d) === dateStr)) {
+                        prevMonthBaseTaskDates[criteria.code].push(targetDate);
+                    }
+                });
+            });
+            
+            // 2. Dependent Tasks (EB14, EB22, EB31, EB32) 날짜 계산 및 적용
+            const dependentCriteria = CMS_CRITERIA_ALL.filter(c => c.type !== 'excluded' && c.baseCode !== null);
+
+            const eb31Dates = [];
+            const prevMonthEb31Dates = []; 
+
+            dependentCriteria.filter(c => ['EB13/EI13', 'EB21'].includes(c.baseCode)).forEach(criteria => {
+                const baseCode = criteria.baseCode;
+                const delayDays = criteria.delayDays;
+
+                if (!baseTaskDates[baseCode]) return; 
+                
+                baseTaskDates[baseCode].forEach(baseDate => {
+                    const finalDate = addWorkingDays(baseDate, delayDays);
+                    const finalDateStr = formatDate(finalDate);
+                    const finalYear = finalDate.getFullYear();
+                    const finalMonth = finalDate.getMonth();
+                    
+                    // 달력에 표시되는 날짜 범위인지 확인
+                    // 1. 현재 달
+                    const isCurrentMonth = finalMonth === month && finalYear === year;
+                    // 2. 이전 달 끝부분 (달력에 표시되는 범위)
+                    const isPrevMonthVisible = finalMonth === prevMonth && finalYear === prevMonthYear && 
+                                               finalDate.getDate() >= prevMonthStart;
+                    // 3. 다음 달 시작부분 (달력에 표시되는 범위: 1일부터 nextMonthDays까지)
+                    const nextMonthNum = (month + 1) % 12;
+                    const nextMonthYearNum = month === 11 ? year + 1 : year;
+                    const isNextMonthVisible = finalMonth === nextMonthNum && finalYear === nextMonthYearNum &&
+                                               nextMonthDays > 0 && finalDate.getDate() >= 1 && finalDate.getDate() <= nextMonthDays;
+                    
+                    if (!isCurrentMonth && !isPrevMonthVisible && !isNextMonthVisible) {
+                        return;
+                    }
+
+                    const task = {
+                        stage: criteria.stage,
+                        code: criteria.code,
+                        task: criteria.task, 
+                        colorClass: criteria.colorClass
+                    };
+                    
+                    tasksByDate[finalDateStr] = tasksByDate[finalDateStr] || [];
+                    if (!tasksByDate[finalDateStr].some(t => t.code === task.code)) {
+                        tasksByDate[finalDateStr].push(task);
+                    }
+
+                    if (criteria.code === 'EB31') {
+                        eb31Dates.push(finalDate);
+                    }
+                });
+            });
+
+            dependentCriteria.filter(c => c.baseCode === 'EB31').forEach(criteria => {
+                const delayDays = criteria.delayDays;
+
+                eb31Dates.forEach(baseDate => {
+                    const finalDate = addWorkingDays(baseDate, delayDays);
+                    const finalDateStr = formatDate(finalDate);
+                    const finalYear = finalDate.getFullYear();
+                    const finalMonth = finalDate.getMonth();
+                    
+                    // 달력에 표시되는 날짜 범위인지 확인
+                    // 1. 현재 달
+                    const isCurrentMonth = finalMonth === month && finalYear === year;
+                    // 2. 이전 달 끝부분 (달력에 표시되는 범위)
+                    const isPrevMonthVisible = finalMonth === prevMonth && finalYear === prevMonthYear && 
+                                               finalDate.getDate() >= prevMonthStart;
+                    // 3. 다음 달 시작부분 (달력에 표시되는 범위: 1일부터 nextMonthDays까지)
+                    const nextMonthNum = (month + 1) % 12;
+                    const nextMonthYearNum = month === 11 ? year + 1 : year;
+                    const isNextMonthVisible = finalMonth === nextMonthNum && finalYear === nextMonthYearNum &&
+                                               nextMonthDays > 0 && finalDate.getDate() >= 1 && finalDate.getDate() <= nextMonthDays;
+                    
+                    if (!isCurrentMonth && !isPrevMonthVisible && !isNextMonthVisible) {
+                        return;
+                    }
+
+                    const task = {
+                        stage: criteria.stage,
+                        code: criteria.code,
+                        task: criteria.task, 
+                        colorClass: criteria.colorClass
+                    };
+
+                    tasksByDate[finalDateStr] = tasksByDate[finalDateStr] || [];
+                    if (!tasksByDate[finalDateStr].some(t => t.code === task.code)) {
+                        tasksByDate[finalDateStr].push(task);
+                    }
+                });
+            });
+            
+            // 이전 달의 base tasks로부터 파생되는 dependent tasks 계산 (현재 달에 영향을 미칠 수 있음)
+            dependentCriteria.filter(c => ['EB13/EI13', 'EB21'].includes(c.baseCode)).forEach(criteria => {
+                const baseCode = criteria.baseCode;
+                const delayDays = criteria.delayDays;
+
+                if (!prevMonthBaseTaskDates[baseCode]) return;
+                
+                prevMonthBaseTaskDates[baseCode].forEach(baseDate => {
+                    const finalDate = addWorkingDays(baseDate, delayDays);
+                    const finalDateStr = formatDate(finalDate);
+                    const finalYear = finalDate.getFullYear();
+                    const finalMonth = finalDate.getMonth();
+                    
+                    // 현재 달에 속하는 경우 tasksByDate에 추가
+                    if (finalMonth === month && finalYear === year) {
+                        const task = {
+                            stage: criteria.stage,
+                            code: criteria.code,
+                            task: criteria.task, 
+                            colorClass: criteria.colorClass
+                        };
+                        
+                        tasksByDate[finalDateStr] = tasksByDate[finalDateStr] || [];
+                        if (!tasksByDate[finalDateStr].some(t => t.code === task.code)) {
+                            tasksByDate[finalDateStr].push(task);
+                        }
+                    }
+
+                    // EB31인 경우, 이전 달에 속하든 현재 달에 속하든 모두 prevMonthEb31Dates에 추가
+                    // (이전 달의 EB31로부터 파생되는 EB32가 현재 달에 표시될 수 있도록)
+                    if (criteria.code === 'EB31') {
+                        prevMonthEb31Dates.push(finalDate);
+                    }
+                });
+            });
+            
+            // 이전 달의 EB31로부터 파생되는 EB32 계산 (현재 달에 영향을 미칠 수 있음)
+            dependentCriteria.filter(c => c.baseCode === 'EB31').forEach(criteria => {
+                const delayDays = criteria.delayDays;
+
+                prevMonthEb31Dates.forEach(baseDate => {
+                    const finalDate = addWorkingDays(baseDate, delayDays);
+                    const finalDateStr = formatDate(finalDate);
+                    const finalYear = finalDate.getFullYear();
+                    const finalMonth = finalDate.getMonth();
+                    
+                    // 현재 달에 속하는 경우만 추가
+                    if (finalMonth !== month || finalYear !== year) {
+                        return;
+                    }
+
+                    const task = {
+                        stage: criteria.stage,
+                        code: criteria.code,
+                        task: criteria.task, 
+                        colorClass: criteria.colorClass
+                    };
+
+                    tasksByDate[finalDateStr] = tasksByDate[finalDateStr] || [];
+                    if (!tasksByDate[finalDateStr].some(t => t.code === task.code)) {
+                        tasksByDate[finalDateStr].push(task);
+                    }
+                });
+            });
+
+            return { tasksByDate, ALL_ACTIVE_HOLIDAYS: ALL_ACTIVE_HOLIDAYS, holidayMap: holidayMap };
+        }
+
+
+        function renderCalendar() {
+            const year = currentDate.getFullYear();
+            const month = currentDate.getMonth();
+            updateSelectors(); 
+
+            const monthYearText = `${year}년 ${month + 1}월`;
+            currentMonthYearEl.textContent = monthYearText;
+            printHeaderEl.textContent = monthYearText + ' CMS 파일 송수신 업무 달력'; 
+
+            const firstDayOfMonth = new Date(year, month, 1).getDay(); 
+            const lastDateOfMonth = new Date(year, month + 1, 0).getDate(); 
+            const lastDateOfPrevMonth = new Date(year, month, 0).getDate(); 
+            
+            const { tasksByDate, ALL_ACTIVE_HOLIDAYS, holidayMap } = calculateMonthlyTasks(year, month);
+            
+            const today = new Date();
+            const todayStr = formatDate(today);
+            
+            let htmlContent = '';
+            let dayCounter = 1;
+            const totalDisplayCells = 42; 
+
+            for (let i = 0; i < totalDisplayCells; i++) {
+                let date, isCurrentMonth, dateStr;
+                let dayOfWeek = i % 7;
+                let tasks = [];
+                let holidayInfo = null;
+                let isToday = false; 
+
+                if (i < firstDayOfMonth) {
+                    // 이전 달 날짜
+                    date = lastDateOfPrevMonth - firstDayOfMonth + i + 1;
+                    isCurrentMonth = false;
+                    const prevMonthDate = new Date(year, month, 0);
+                    dateStr = `${prevMonthDate.getFullYear()}-${String(prevMonthDate.getMonth() + 1).padStart(2, '0')}-${String(date).padStart(2, '0')}`;
+                    // 이전 달 날짜에도 업무 표시
+                    tasks = tasksByDate[dateStr] || [];
+                } else if (dayCounter <= lastDateOfMonth) {
+                    // 현재 달 날짜
+                    date = dayCounter++;
+                    isCurrentMonth = true;
+                    dateStr = `${year}-${String(month + 1).padStart(2, '0')}-${String(date).padStart(2, '0')}`;
+                    
+                    // 활성 공휴일 정보 가져오기
+                    const holidayArray = ALL_ACTIVE_HOLIDAYS.filter(h => h.date === dateStr);
+                    holidayInfo = holidayArray.length > 0 ? holidayArray[0] : null;
+                    
+                    if (dateStr === todayStr) {
+                        isToday = true; 
+                    }
+                    tasks = tasksByDate[dateStr] || [];
+
+                } else {
+                    // 다음 달 날짜
+                    date = dayCounter++ - lastDateOfMonth;
+                    isCurrentMonth = false;
+                    const nextMonthDate = new Date(year, month + 1, 1);
+                    dateStr = `${nextMonthDate.getFullYear()}-${String(nextMonthDate.getMonth() + 1).padStart(2, '0')}-${String(date).padStart(2, '0')}`;
+                    // 다음 달 날짜에도 업무 표시
+                    tasks = tasksByDate[dateStr] || [];
+                }
+
+                // CSS 클래스 결정
+                let cellClass = 'day-cell';
+                if (!isCurrentMonth) cellClass += ' other-month';
+                if (isToday) cellClass += ' today ring-2 ring-indigo-500'; 
+
+                let dayNumberClass = 'day-number';
+                if (dayOfWeek === 0) dayNumberClass += ' day-0 text-red-600'; // 일요일
+                if (dayOfWeek === 6) dayNumberClass += ' day-6 text-blue-600'; // 토요일
+                
+                let tasksHtml = '';
+                
+                // 주말 또는 공휴일 배경색 설정
+                if (isCurrentMonth) {
+                     const d = new Date(dateStr);
+                     // isNonWorkingDay는 DELETED_HOLIDAYS를 반영하며, 공휴일/주말 여부를 최종적으로 결정합니다.
+                     if (isNonWorkingDay(d)) {
+                         cellClass += ' !bg-red-50 !bg-opacity-80'; 
+                     }
+                     
+                     if (holidayInfo) {
+                         const holidayName = holidayInfo.name + (holidayInfo.isSubstitute ? ' (대체)' : '');
+                         tasksHtml = `
+                             <div class="holiday-text">
+                                 ${holidayName}
+                             </div>
+                         `;
+                     }
+                } 
+                
+                // 업무 표시 (업무가 있을 경우 - 현재 달, 이전 달, 다음 달 모두 표시)
+                if (tasks.length > 0) {
+                    tasksHtml += tasks.map(task => {
+                        const codeWithStage = `${task.code}(${task.stage})`; 
+                        const taskDisplay = `${task.task}`; 
+                        return `
+                            <div class="task-block ${task.colorClass}" title="${codeWithStage}: ${taskDisplay}">
+                                <span class="task-code">${codeWithStage}</span><br>
+                                <span class="task-detail">${taskDisplay}</span>
+                            </div>
+                        `;
+                    }).join('');
+                }
+
+
+                // 최종 셀 HTML 추가
+                htmlContent += `
+                    <div class="${cellClass}">
+                        <span class="${dayNumberClass}">${date}</span>
+                        ${tasksHtml}
+                    </div>
+                `;
+            }
+
+            calendarDaysEl.innerHTML = htmlContent;
+        }
+
+        function changeMonth(monthChange) {
+            currentDate.setMonth(currentDate.getMonth() + monthChange);
+            renderCalendar();
+        }
+        
+        // 인쇄 기능
+        function printCalendar() {
+            window.print();
+        }
+        
+        // 탭 기능
+        function switchTab(activeTabId) {
+            tabContents.forEach(content => {
+                content.classList.add('hidden');
+            });
+            tabButtons.forEach(button => {
+                button.classList.remove('tab-active', 'border-indigo-500', 'text-indigo-600');
+                button.classList.add('border-transparent', 'text-gray-500');
+            });
+
+            document.getElementById(activeTabId).classList.remove('hidden');
+            document.querySelector(`[data-tab="${activeTabId}"]`).classList.add('tab-active', 'border-indigo-500', 'text-indigo-600');
+            
+            if (activeTabId === 'holiday') {
+                // 공휴일 탭으로 전환 시 현재 달력 연도를 기본값으로 설정하고 리스트 렌더링
+                holidayYearSelector.value = currentDate.getFullYear();
+                renderHolidayList();
+            }
+        }
+
+
+        // --- 초기 로드 및 이벤트 연결 ---
+        document.addEventListener('DOMContentLoaded', async () => {
+            await loadRemoteSettings();
+            // localStorage에서 제외된 공휴일 목록 로드
+            loadDeletedHolidaysFromStorage();
+            loadSystemHolidayOverridesFromStorage();
+            
+            renderCriteriaTable();
+            populateSelectors(); 
+            
+            // 이벤트 리스너 연결
+            prevMonthBtn.addEventListener('click', () => changeMonth(-1));
+            nextMonthBtn.addEventListener('click', () => changeMonth(1));
+            printBtn.addEventListener('click', printCalendar);
+            
+            // 새로고침 버튼 이벤트 리스너
+            if (refreshDataBtn) {
+                refreshDataBtn.addEventListener('click', loadHolidaysCsvFromServer);
+            }
+            
+            // 내보내기/가져오기 버튼 이벤트 리스너
+            if (exportSettingsBtn) {
+                exportSettingsBtn.addEventListener('click', exportSettings);
+            }
+            if (importSettingsBtn) {
+                importSettingsBtn.addEventListener('click', () => {
+                    importSettingsFile.click();
+                });
+            }
+            if (importSettingsFile) {
+                importSettingsFile.addEventListener('change', importSettings);
+            }
+
+            // 탭 이벤트 리스너 추가
+            tabButtons.forEach(button => {
+                button.addEventListener('click', (event) => {
+                    const tabId = event.target.dataset.tab;
+                    if (tabId) {
+                        switchTab(tabId);
+                    }
+                });
+            });
+
+            // 초기 로드
+            await loadHolidaysCsvFromServer();
+            
+            // 초기 탭 설정
+            switchTab('calendar');
+        });
+    </script>
+
+</body></html>
