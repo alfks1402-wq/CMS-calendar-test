@@ -1025,9 +1025,9 @@
 
         let currentDate = new Date();
 
-        // 시스템 공휴일 캐시
-        let KOREAN_HOLIDAYS = []; // 현재 달력 월의 법정 공휴일 (렌더링 용)
-        let SYSTEM_HOLIDAYS_CACHE = {}; // 연도별 시스템 공휴일 캐시 (YYYY: [holiday objects])
+        // 공휴일 데이터 소스는 holidays.csv(USER_HOLIDAYS)만 사용
+        let KOREAN_HOLIDAYS = []; // 호환성 유지를 위한 빈 배열
+        let SYSTEM_HOLIDAYS_CACHE = {}; // 더 이상 달력 계산에 사용하지 않음
         const START_YEAR = 2024;
         const END_YEAR = 2028;
 
@@ -1281,226 +1281,10 @@
             }
         }
         
-        // --- 대한민국 법정 공휴일 및 대체공휴일 계산 로직 (정적) ---
-
-        // 참고: 음력 날짜 계산을 위해 2024년 ~ 2028년의 설날/추석 (연휴 시작일) 양력 날짜를 사용
-        const LUNAR_HOLIDAYS_MAP = {
-            // [양력 날짜]: [공휴일명, 연휴 일수]
-            2024: { 
-                '02-09': { name: '설날 연휴', days: 3, actualDay: '2024-02-10' }, 
-                '09-16': { name: '추석 연휴', days: 3, actualDay: '2024-09-17' }
-            },
-            2025: { 
-                '01-28': { name: '설날 연휴', days: 3, actualDay: '2025-01-29' }, 
-                '10-06': { name: '추석 연휴', days: 3, actualDay: '2025-10-07' }
-            },
-            2026: { 
-                '02-16': { name: '설날 연휴', days: 3, actualDay: '2026-02-17' }, 
-                '09-25': { name: '추석 연휴', days: 3, actualDay: '2026-09-26' }
-            },
-            2027: {
-                '02-06': { name: '설날 연휴', days: 3, actualDay: '2027-02-07' },
-                '09-14': { name: '추석 연휴', days: 3, actualDay: '2027-09-15' }
-            },
-            2028: {
-                '01-25': { name: '설날 연휴', days: 3, actualDay: '2028-01-26' },
-                '10-02': { name: '추석 연휴', days: 3, actualDay: '2028-10-03' }
-            }
-        };
-        
-        // 부처님 오신 날 (석가탄신일) 양력 날짜 (음력 4월 8일)
-        const BUDDHA_BIRTHDAY_MAP = {
-            2024: '2024-05-15', 2025: '2025-05-24', 2026: '2026-05-13',
-            2027: '2027-05-03', 2028: '2028-05-22'
-        };
-
-
-        /** * 주어진 연도의 대한민국 법정 공휴일 목록 (대체공휴일 포함)을 계산합니다.
-         */
-        function calculateKoreanHolidays(year) {
-            let holidays = [];
-
-            // Helper: 날짜 추가
-            const addHoliday = (dateStr, name, isLunar=false) => {
-                if (!/^\d{4}-\d{2}-\d{2}$/.test(dateStr)) return;
-
-                holidays.push({ 
-                    date: dateStr, 
-                    name: name, 
-                    isHoliday: true, 
-                    isLunar: isLunar,
-                    isSubstitute: false,
-                    isSystem: true // 시스템에서 계산된 공휴일임을 표시
-                });
-            };
-            
-            // Helper: 날짜 문자열에서 요일 가져오기 (0:일, 6:토)
-            const getDayOfWeek = (dateStr) => new Date(dateStr).getDay();
-
-            // 1. 태양력 공휴일
-            addHoliday(`${year}-01-01`, '신정');
-            addHoliday(`${year}-03-01`, '삼일절');
-            addHoliday(`${year}-05-05`, '어린이날'); 
-            addHoliday(`${year}-06-06`, '현충일');
-            addHoliday(`${year}-08-15`, '광복절');
-            addHoliday(`${year}-10-03`, '개천절');
-            addHoliday(`${year}-10-09`, '한글날');
-            addHoliday(`${year}-12-25`, '성탄절');
-
-            // 부처님 오신 날 (석가탄신일)
-            if (BUDDHA_BIRTHDAY_MAP[year]) {
-                addHoliday(BUDDHA_BIRTHDAY_MAP[year], '부처님 오신 날', true);
-            }
-
-            // 2. 음력 공휴일 (설날, 추석)
-            const lunar = LUNAR_HOLIDAYS_MAP[year];
-            if (lunar) {
-                // 설날 연휴 (연휴 시작일 기준, 3일)
-                const lunarNewYear = lunar[Object.keys(lunar)[0]]; 
-                const baseDateStr_S = lunarNewYear ? lunarNewYear.actualDay : null;
-                if (baseDateStr_S) { 
-                    const baseDate = new Date(baseDateStr_S);
-                    for (let i = -1; i <= 1; i++) {
-                        const date = new Date(baseDate.getTime());
-                        date.setDate(date.getDate() + i);
-                        const dateStr = formatDate(date);
-                        const name = i === 0 ? '설날' : (i === -1 ? '설날 연휴(전날)' : '설날 연휴(다음날)');
-                        addHoliday(dateStr, name, true);
-                    }
-                }
-
-                // 추석 연휴 (연휴 시작일 기준, 3일)
-                const chuseok = lunar[Object.keys(lunar)[1]];
-                const baseDateStr_C = chuseok ? chuseok.actualDay : null;
-                if (baseDateStr_C) {
-                    const baseDate = new Date(baseDateStr_C);
-                    for (let i = -1; i <= 1; i++) { // 추석 전날, 당일, 다음날
-                        const date = new Date(baseDate.getTime());
-                        date.setDate(date.getDate() + i);
-                        const dateStr = formatDate(date);
-                        const name = i === 0 ? '추석' : (i === -1 ? '추석 연휴(전날)' : '추석 연휴(다음날)');
-                        addHoliday(dateStr, name, true);
-                    }
-                }
-            }
-
-            // 공휴일 목록의 날짜만 추출하여 Set 생성 (중복 처리 및 검색 최적화)
-            let isHolidaySet = new Set(holidays.map(h => h.date));
-            
-            // --- 대체 공휴일 계산을 위한 도우미 함수 ---
-            const isNonWorkingDayForSubstitution = (dateStr) => {
-                const d = new Date(dateStr);
-                const dayOfWeek = d.getDay(); // 0:일, 6:토
-                // 대체공휴일 지정 기준: 일요일 또는 다른 공휴일과 겹치는 경우
-                return dayOfWeek === 0 || isHolidaySet.has(dateStr); 
-            }
-
-            const findNextWorkingDay = (dateStr) => {
-                let nextDay = new Date(dateStr);
-                nextDay.setDate(nextDay.getDate() + 1);
-                // 주말(일요일/토요일) 또는 다른 공휴일이 아닐 때까지
-                while (isNonWorkingDayForSubstitution(formatDate(nextDay)) || new Date(formatDate(nextDay)).getDay() === 6) {
-                    nextDay.setDate(nextDay.getDate() + 1);
-                }
-                return formatDate(nextDay);
-            }
-            
-            // --- 3. 대체 공휴일 계산 (Substitute Holidays) ---
-
-            const standardHolidays = [
-                { date: `${year}-05-05`, name: '어린이날' },
-                { date: `${year}-03-01`, name: '삼일절' },
-                { date: `${year}-08-15`, name: '광복절' },
-                { date: `${year}-10-03`, name: '개천절' },
-                { date: `${year}-10-09`, name: '한글날' },
-                { date: BUDDHA_BIRTHDAY_MAP[year], name: '부처님 오신 날' }
-            ].filter(h => h.date && isHolidaySet.has(h.date));
-
-            standardHolidays.forEach(h => {
-                const dayOfWeek = getDayOfWeek(h.date);
-                
-                // 어린이날은 토요일, 일요일 모두 대체공휴일 지정 대상 (다른 공휴일과 겹칠 때도)
-                if (h.name === '어린이날') {
-                    if (dayOfWeek === 0 || dayOfWeek === 6 || holidays.filter(hd => hd.date === h.date).length > 1) {
-                        const subDateStr = findNextWorkingDay(h.date);
-                        if (!isHolidaySet.has(subDateStr)) {
-                            holidays.push({ date: subDateStr, name: '대체공휴일 (어린이날)', isHoliday: true, isSubstitute: true, isSystem: true });
-                            isHolidaySet.add(subDateStr);
-                        }
-                    }
-                } 
-                // 부처님 오신 날은 일요일만 대체공휴일 지정 대상 (토요일 미포함)
-                else if (h.name === '부처님 오신 날') {
-                    if (dayOfWeek === 0 || holidays.filter(hd => hd.date === h.date).length > 1) {
-                        const subDateStr = findNextWorkingDay(h.date);
-                        if (!isHolidaySet.has(subDateStr)) {
-                            holidays.push({ date: subDateStr, name: '대체공휴일 (부처님 오신 날)', isHoliday: true, isSubstitute: true, isSystem: true });
-                            isHolidaySet.add(subDateStr);
-                        }
-                    }
-                }
-                // 기타 일반 공휴일: 일요일 또는 다른 공휴일과 겹칠 때 대체공휴일 지정
-                else {
-                    if (dayOfWeek === 0 || holidays.filter(hd => hd.date === h.date).length > 1) {
-                        const subDateStr = findNextWorkingDay(h.date);
-                        if (!isHolidaySet.has(subDateStr)) {
-                            holidays.push({ date: subDateStr, name: `대체공휴일 (${h.name})`, isHoliday: true, isSubstitute: true, isSystem: true });
-                            isHolidaySet.add(subDateStr);
-                        }
-                    }
-                }
-            });
-
-            // B. 설날/추석 대체 공휴일 규칙 (연휴 기간 내에 '일요일' 또는 '다른 공휴일' 포함 시)
-            const checkSubstitute = (baseDateStr, holidayName) => {
-                if (baseDateStr) {
-                    const baseDate = new Date(baseDateStr);
-                    // 설날: 연휴 기간 (전날, 당일, 다음날)에 일요일이 포함된 경우
-                    // 추석: 연휴 기간 (전날, 당일, 다음날)에 일요일이 포함된 경우
-                    let hasSundayInHolidayPeriod = false;
-                    for (let i = -1; i <= 1; i++) {
-                        const checkDate = new Date(baseDate.getTime());
-                        checkDate.setDate(checkDate.getDate() + i);
-                        if (checkDate.getDay() === 0) { // 일요일인 경우
-                            hasSundayInHolidayPeriod = true;
-                            break;
-                        }
-                    }
-
-                    if (hasSundayInHolidayPeriod) {
-                        let substituteDate = new Date(baseDate.getTime());
-                        substituteDate.setDate(substituteDate.getDate() + 2); // 연휴 다음날
-                        
-                        // 그 다음 영업일을 찾음
-                        while (isNonWorkingDayForSubstitution(formatDate(substituteDate)) || new Date(formatDate(substituteDate)).getDay() === 6) {
-                            substituteDate.setDate(substituteDate.getDate() + 1);
-                        }
-                        const subDateStr = formatDate(substituteDate);
-                        
-                        if (!isHolidaySet.has(subDateStr)) {
-                            holidays.push({ date: subDateStr, name: `대체공휴일 (${holidayName})`, isHoliday: true, isSubstitute: true, isSystem: true });
-                            isHolidaySet.add(subDateStr);
-                        }
-                    }
-                }
-            };
-            
-            if (lunar) {
-                const lunarNewYear = lunar[Object.keys(lunar)[0]]; 
-                const chuseok = lunar[Object.keys(lunar)[1]];
-                
-                checkSubstitute(lunarNewYear?.actualDay, '설날');
-                checkSubstitute(chuseok?.actualDay, '추석');
-            }
-            
-            return holidays;
-        }
-
-        // --- 시스템 공휴일 캐싱 및 초기화 ---
+        // --- holidays.csv 단일 소스 정책 ---
+        // 달력 계산/표시는 USER_HOLIDAYS(=holidays.csv 로드 결과)만 사용합니다.
         function cacheSystemHolidays() {
-            for (let year = START_YEAR; year <= END_YEAR; year++) {
-                SYSTEM_HOLIDAYS_CACHE[year] = calculateKoreanHolidays(year);
-            }
+            SYSTEM_HOLIDAYS_CACHE = {};
         }
         // 캐시 초기화
         cacheSystemHolidays(); 
@@ -1549,15 +1333,9 @@
             // 2. 주말 체크
             if (dayOfWeek === 0 || dayOfWeek === 6) return true;
 
-            // 3. 법정 공휴일 (SYSTEM_HOLIDAYS_CACHE) + 사용자 정의 공휴일 (USER_HOLIDAYS) 확인
+            // 3. holidays.csv(USER_HOLIDAYS) 공휴일 확인
             const checkHoliday = (str) => {
-                const year = d.getFullYear();
-                
-                // 시스템 공휴일 체크 (캐시 사용)
-                const systemHolidays = SYSTEM_HOLIDAYS_CACHE[year] || [];
-                if (systemHolidays.some(h => h.date === str)) return true;
-                
-                // 사용자 정의 공휴일 체크
+                // holidays.csv 로드 공휴일 체크
                 if (USER_HOLIDAYS.some(h => h.date === str)) return true;
 
                 return false;
@@ -1667,69 +1445,39 @@
 
         // --- Holiday Management Functions (Firestore Interaction) ---
         
-        // 현재 활성화된 공휴일 목록을 반환 (시스템 + 사용자 - 삭제 목록)
+        // 현재 활성화된 공휴일 목록을 반환 (holidays.csv - 삭제 목록)
         function getAllHolidaysForYear(year) {
             const yearStr = String(year);
             
-            // 1. 시스템 공휴일 (캐시에서 가져옴)
-            const systemHolidays = SYSTEM_HOLIDAYS_CACHE[year] || [];
-            
-            // 2. 사용자 정의 공휴일 (해당 연도의 것만 필터링)
-            const userHolidays = USER_HOLIDAYS.filter(h => h.date.startsWith(yearStr));
+            // 1. holidays.csv 공휴일 (해당 연도의 것만 필터링)
+            const csvHolidays = USER_HOLIDAYS.filter(h => h.date.startsWith(yearStr));
 
-            // 3. 두 목록을 합치고, 날짜를 기준으로 중복 제거
-            let ALL = [...systemHolidays, ...userHolidays];
-            const uniqueHolidays = ALL.filter((holiday, index, self) =>
+            // 2. 날짜를 기준으로 중복 제거
+            const uniqueHolidays = csvHolidays.filter((holiday, index, self) =>
                 index === self.findIndex((h) => h.date === holiday.date)
             );
             
-            // 4. 삭제된 공휴일 목록 필터링
-            let activeHolidays = uniqueHolidays.filter(holiday =>
+            // 3. 삭제된 공휴일 목록 필터링
+            const activeHolidays = uniqueHolidays.filter(holiday =>
                 !DELETED_HOLIDAYS.includes(holiday.date)
             );
-            
-            // 5. 시스템 공휴일 이름 수정 적용
-            activeHolidays = activeHolidays.map(h => {
-                const overrideName = h.isSystem ? SYSTEM_HOLIDAY_OVERRIDES[h.date] : null;
-                if (overrideName) {
-                    return { ...h, name: overrideName, isOverride: true };
-                }
-                return h;
-            });
             
             return activeHolidays.sort((a, b) => a.date.localeCompare(b.date));
         }
 
-        // 공휴일 목록 UI 렌더링 (시스템 공휴일 + 사용자 정의 공휴일 모두 표시)
+        // 공휴일 목록 UI 렌더링 (holidays.csv 기준)
         function renderHolidayList() {
             const selectedYear = holidayYearSelector.value;
             if (!selectedYear) return;
 
-            // 전체 활성 공휴일 목록 가져오기 (시스템 + 사용자)
+            // 전체 활성 공휴일 목록 가져오기 (holidays.csv)
             const allActiveHolidays = getAllHolidaysForYear(selectedYear);
             
-            // 사용자 정의 공휴일과 시스템 공휴일 분리
-            const userHolidays = allActiveHolidays.filter(h => !h.isSystem);
-            const systemHolidays = allActiveHolidays.filter(h => h.isSystem);
-            
-            // 삭제된 공휴일 목록 (시스템 + 사용자 모두 포함)
+            // 삭제된 공휴일 목록 (holidays.csv에 존재하는 날짜만 표시)
             const allDeletedHolidays = DELETED_HOLIDAYS
                 .filter(date => date.startsWith(selectedYear))
                 .map(date => {
-                    // 시스템 공휴일인지 확인
-                    const year = parseInt(selectedYear);
-                    const systemHoliday = SYSTEM_HOLIDAYS_CACHE[year]?.find(h => h.date === date);
-                    if (systemHoliday) {
-                        return { 
-                            date, 
-                            name: systemHoliday.name, 
-                            isDeleted: true, 
-                            isSystem: true 
-                        };
-                    }
-                    
-                    // 사용자 정의 공휴일인지 확인
-                    const originalUserHoliday = USER_HOLIDAYS.find(h => h.date === date);
+                    const originalUserHoliday = USER_HOLIDAYS.find(h => h.date === date && h.date.startsWith(selectedYear));
                     if (originalUserHoliday) {
                         return { 
                             date, 
@@ -1753,39 +1501,11 @@
 
             let html = '';
 
-            // 1. 활성 공휴일 목록 (시스템 + 사용자)
+            // 1. 활성 공휴일 목록 (holidays.csv)
             if (allActiveHolidays.length > 0) {
                 html += `<h5 class="text-base font-semibold text-gray-700 mt-4 mb-2">활성 공휴일 (${allActiveHolidays.length}개)</h5>`;
-                
-                // 시스템 공휴일 표시
-                if (systemHolidays.length > 0) {
-                    html += systemHolidays.map((holiday) => {
-                        const type = '시스템';
-                        const typeClass = 'text-blue-500';
-                        const deleteBtnText = '제외';
-
-                        return `
-                            <li class="flex justify-between items-center bg-white p-3 rounded-lg border shadow-sm text-sm">
-                                <span class="font-semibold text-gray-800">${holiday.date}</span>
-                                <span class="text-gray-600 ml-4">${holiday.name}${holiday.isSubstitute ? ' (대체)' : ''}</span>
-                                <span class="text-xs font-medium ${typeClass} bg-gray-100 px-2 py-1 rounded-full ml-auto mr-3">${type}</span>
-                                <div class="flex gap-2">
-                                    <button data-date="${holiday.date}" data-system="true" class="edit-holiday-btn text-blue-500 hover:text-blue-700 font-medium transition duration-150">
-                                        이름 수정
-                                    </button>
-                                    <button data-date="${holiday.date}" data-system="true" class="delete-holiday-btn text-red-500 hover:text-red-700 font-medium transition duration-150">
-                                        ${deleteBtnText}
-                                    </button>
-                                </div>
-                            </li>
-                        `;
-                    }).join('');
-                }
-                
-                // 사용자 정의 공휴일 표시
-                if (userHolidays.length > 0) {
-                    html += userHolidays.map((holiday) => {
-                        const type = '사용자';
+                html += allActiveHolidays.map((holiday) => {
+                        const type = 'CSV';
                         const typeClass = 'text-green-500';
                         const deleteBtnText = '제외';
 
@@ -1802,14 +1522,13 @@
                             </li>
                         `;
                     }).join('');
-                }
             }
 
             // 2. 삭제/제외된 공휴일 목록 (복구 가능)
             if (allDeletedHolidays.length > 0) {
                 html += `<h5 class="text-base font-semibold text-gray-700 mt-8 mb-2 border-t pt-4">삭제/제외된 공휴일 (${allDeletedHolidays.length}개)</h5>`;
                 html += allDeletedHolidays.map((holiday) => {
-                    const typeLabel = holiday.isSystem ? '제외됨 (시스템)' : '제외됨 (사용자)';
+                    const typeLabel = '제외됨 (CSV)';
                     return `
                         <li class="flex justify-between items-center bg-gray-100 p-3 rounded-lg border border-dashed text-sm line-through text-gray-500">
                             <span class="font-semibold">${holiday.date}</span>
@@ -1830,9 +1549,6 @@
             });
             document.querySelectorAll('.restore-holiday-btn').forEach(button => {
                 button.addEventListener('click', restoreHoliday);
-            });
-            document.querySelectorAll('.edit-holiday-btn').forEach(button => {
-                button.addEventListener('click', editHoliday);
             });
         }
 
@@ -1863,35 +1579,7 @@
             renderHolidayList();
         }
         
-            // 공휴일 수정 (시스템/사용자 모두)
-        function editHoliday(event) {
-            const dateToEdit = event.currentTarget.dataset.date;
-            const isSystem = event.currentTarget.dataset.system === 'true';
-            
-            if (isSystem) {
-                // 시스템 공휴일 이름 로컬 수정
-                // 현재 이름 찾기: 시스템 공휴일 캐시 또는 override 반영
-                const year = parseInt(dateToEdit.substring(0, 4), 10);
-                const systemHoliday = (SYSTEM_HOLIDAYS_CACHE[year] || []).find(h => h.date === dateToEdit);
-                const currentName = SYSTEM_HOLIDAY_OVERRIDES[dateToEdit] || (systemHoliday ? systemHoliday.name : '');
-                
-                if (!systemHoliday && !currentName) {
-                    alert('수정할 시스템 공휴일을 찾을 수 없습니다.');
-                    return;
-                }
-                
-                const newName = prompt(`시스템 공휴일명을 수정하세요 (로컬 표시 전용):\n날짜: ${dateToEdit}\n현재 이름: ${currentName || (systemHoliday ? systemHoliday.name : '')}`, currentName || (systemHoliday ? systemHoliday.name : ''));
-                
-                if (newName && newName.trim()) {
-                    SYSTEM_HOLIDAY_OVERRIDES[dateToEdit] = newName.trim();
-                    saveSystemHolidayOverridesToStorage();
-                    renderCalendar();
-                    renderHolidayList();
-                }
-            } else {
-                alert('사용자 공휴일은 `holidays.csv`에서 수정해주세요.');
-            }
-        }
+        // 사용자 공휴일 편집은 holidays.csv에서 수행
 
         // --- Calendar Core Logic (데이터는 Firestore에서 동기화됨) ---
 
